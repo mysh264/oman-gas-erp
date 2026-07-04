@@ -1,30 +1,39 @@
+name: gas-erp
+
+x-app-build: &app-build
+  build:
+    context: .
+    dockerfile: Dockerfile
+
+x-app-service: &app-service
+  <<: *app-build
+  restart: unless-stopped
+  working_dir: /var/www/html
+  volumes:
+    - .:/var/www/html
+  depends_on:
+    postgres:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+  networks:
+    - gas_erp_internal
+
 services:
   app:
-    build:
-      context: /home/mahmoud/app/gas-erp
-      dockerfile: /home/mahmoud/app/gas-erp/Dockerfile
+    <<: *app-service
     container_name: gas_erp_app
-    restart: unless-stopped
-    working_dir: /var/www/html
-    volumes:
-      - /home/mahmoud/app/gas-erp:/var/www/html
-      - /home/mahmoud/app/gas-erp/storage:/var/www/html/storage
-    depends_on:
-      - postgres
-      - redis
-    networks:
-      - gas_erp_internal
 
   nginx:
     image: nginx:alpine
     container_name: gas_erp_nginx
     restart: unless-stopped
     volumes:
-      - /home/mahmoud/app/gas-erp:/var/www/html:ro
-      - /home/mahmoud/app/gas-erp/docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
-      - /home/mahmoud/app/gas-erp/storage:/var/www/html/storage:ro
+      - .:/var/www/html:ro
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
-      - app
+      app:
+        condition: service_started
     networks:
       - gas_erp_internal
       - docker_shared
@@ -38,7 +47,12 @@ services:
       POSTGRES_USER: gas_erp_user
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
-      - /home/mahmoud/app/gas-erp/.docker/postgres:/var/lib/postgresql/data
+      - ./.docker/postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gas_erp_user -d gas_erp"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - gas_erp_internal
 
@@ -46,82 +60,56 @@ services:
     image: redis:7-alpine
     container_name: gas_erp_redis
     restart: unless-stopped
+    command: redis-server --appendonly yes
     volumes:
-      - /home/mahmoud/app/gas-erp/.docker/redis:/data
+      - ./.docker/redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - gas_erp_internal
 
   queue:
-    build:
-      context: /home/mahmoud/app/gas-erp
-      dockerfile: /home/mahmoud/app/gas-erp/Dockerfile
+    <<: *app-service
     container_name: gas_erp_queue
-    restart: unless-stopped
-    working_dir: /var/www/html
     command: php artisan queue:work --sleep=3 --tries=3 --timeout=90
-    volumes:
-      - /home/mahmoud/app/gas-erp:/var/www/html
-      - /home/mahmoud/app/gas-erp/storage:/var/www/html/storage
-    depends_on:
-      - app
-      - postgres
-      - redis
-    networks:
-      - gas_erp_internal
 
   scheduler:
-    build:
-      context: /home/mahmoud/app/gas-erp
-      dockerfile: /home/mahmoud/app/gas-erp/Dockerfile
+    <<: *app-service
     container_name: gas_erp_scheduler
-    restart: unless-stopped
-    working_dir: /var/www/html
     command: php artisan schedule:work
-    volumes:
-      - /home/mahmoud/app/gas-erp:/var/www/html
-      - /home/mahmoud/app/gas-erp/storage:/var/www/html/storage
-    depends_on:
-      - app
-      - postgres
-      - redis
-    networks:
-      - gas_erp_internal
 
   composer:
-    build:
-      context: /home/mahmoud/app/gas-erp
-      dockerfile: /home/mahmoud/app/gas-erp/Dockerfile
+    <<: *app-build
     container_name: gas_erp_composer
     working_dir: /var/www/html
     entrypoint: composer
+    profiles:
+      - tools
     volumes:
-      - /home/mahmoud/app/gas-erp:/var/www/html
+      - .:/var/www/html
     networks:
       - gas_erp_internal
 
   artisan:
-    build:
-      context: /home/mahmoud/app/gas-erp
-      dockerfile: /home/mahmoud/app/gas-erp/Dockerfile
+    <<: *app-service
     container_name: gas_erp_artisan
-    working_dir: /var/www/html
     entrypoint: php artisan
-    volumes:
-      - /home/mahmoud/app/gas-erp:/var/www/html
-      - /home/mahmoud/app/gas-erp/storage:/var/www/html/storage
-    depends_on:
-      - postgres
-      - redis
-    networks:
-      - gas_erp_internal
+    restart: "no"
+    profiles:
+      - tools
 
   npm:
     image: node:22-alpine
     container_name: gas_erp_npm
     working_dir: /var/www/html
     entrypoint: npm
+    profiles:
+      - tools
     volumes:
-      - /home/mahmoud/app/gas-erp:/var/www/html
+      - .:/var/www/html
     networks:
       - gas_erp_internal
 
