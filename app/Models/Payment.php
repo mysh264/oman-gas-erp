@@ -6,14 +6,14 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['invoice_id', 'client_id', 'amount', 'payment_date', 'payment_method', 'reference_number'])]
+#[Fillable(["invoice_id", "client_id", "amount", "payment_date", "payment_method", "reference_number", "receipt_image"])]
 class Payment extends Model
 {
     protected function casts(): array
     {
         return [
-            'amount' => 'decimal:3',
-            'payment_date' => 'date',
+            "amount" => "decimal:3",
+            "payment_date" => "date",
         ];
     }
 
