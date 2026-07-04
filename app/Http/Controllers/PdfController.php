@@ -16,18 +16,27 @@ class PdfController extends Controller
         return Pdf::loadView('pdf.document', [
             'title' => sprintf('Invoice %s', $invoice->invoice_number ?? $invoice->id),
             'type' => 'Invoice',
+            'record' => $invoice,
             'invoice' => $invoice,
         ])->stream(sprintf('invoice-%s.pdf', $invoice->invoice_number ?? $invoice->id));
     }
 
     public function contract(Contract $contract): Response
     {
-        $contract->loadMissing(['client', 'items.product']);
+        return $this->printContract($contract->id);
+    }
 
-        return Pdf::loadView('pdf.document', [
+    public function printContract($id): Response
+    {
+        $contract = Contract::with(['client', 'items.product'])->findOrFail($id);
+
+        $pdf = Pdf::loadView('pdf.document', [
             'title' => sprintf('Contract %s', $contract->id),
             'type' => 'Contract',
+            'record' => $contract,
             'contract' => $contract,
-        ])->stream(sprintf('contract-%s.pdf', $contract->id));
+        ]);
+
+        return $pdf->stream('contract_'.$id.'.pdf');
     }
 }

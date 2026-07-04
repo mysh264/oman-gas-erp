@@ -58,6 +58,10 @@
     </style>
 </head>
 <body>
+    @php
+        $record = $record ?? $invoice ?? $contract ?? null;
+    @endphp
+
     <div class="header">
         <div>
             <div class="logo">Company Logo</div>
@@ -68,7 +72,8 @@
         </div>
     </div>
 
-    @if(isset($invoice))
+    @if($record instanceof \App\Models\Invoice)
+        @php($invoice = $record)
         <table class="meta">
             <tr>
                 <td>
@@ -132,7 +137,8 @@
         </table>
     @endif
 
-    @if(isset($contract))
+    @if($record instanceof \App\Models\Contract)
+        @php($contract = $record)
         <table class="meta">
             <tr>
                 <td>

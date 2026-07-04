@@ -8,6 +8,6 @@ Route::get('/', function () {
 });
 
 Route::get('/pdf/invoice/{invoice}', [PdfController::class, 'invoice'])->name('pdf.invoice');
-Route::get('/pdf/contract/{contract}', [PdfController::class, 'contract'])->name('pdf.contract');
+Route::get('/pdf/contract/{id}', [PdfController::class, 'printContract'])->name('pdf.contract');
 
 require __DIR__.'/auth.php';

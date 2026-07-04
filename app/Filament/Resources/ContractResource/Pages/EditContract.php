@@ -13,10 +13,10 @@ class EditContract extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\Action::make('printPdf')
+            Actions\Action::make('Print PDF')
                 ->label('Print PDF')
                 ->icon('heroicon-o-printer')
-                ->url(fn () => route('pdf.contract', $this->record))
+                ->url(fn ($record) => route('pdf.contract', $record), true)
                 ->openUrlInNewTab(),
             Actions\DeleteAction::make(),
         ];
