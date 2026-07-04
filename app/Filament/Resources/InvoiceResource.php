@@ -35,6 +35,11 @@ class InvoiceResource extends Resource
                     ->searchable()
                     ->preload()
                     ->required(),
+                Forms\Components\Select::make('contract_id')
+                    ->relationship('contract', 'id')
+                    ->searchable()
+                    ->preload()
+                    ->nullable(),
                 Forms\Components\DatePicker::make('invoice_date')
                     ->native(false)
                     ->displayFormat('d/m/Y')

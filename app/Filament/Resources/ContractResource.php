@@ -29,6 +29,11 @@ class ContractResource extends Resource
                     ->searchable()
                     ->preload()
                     ->required(),
+                Forms\Components\Select::make('products')
+                    ->multiple()
+                    ->relationship('products', 'name')
+                    ->searchable()
+                    ->preload(),
                 Forms\Components\DatePicker::make('start_date')
                     ->native(false)
                     ->displayFormat('d/m/Y')

@@ -50,6 +50,11 @@ class Invoice extends Model
         return $this->belongsTo(Order::class);
     }
 
+    public function contract(): BelongsTo
+    {
+        return $this->belongsTo(Contract::class);
+    }
+
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');

@@ -15,46 +15,51 @@ class PaymentResource extends Resource
 {
     protected static ?string $model = Payment::class;
 
-    protected static ?string $navigationIcon = "heroicon-o-rectangle-stack";
+    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Select::make("invoice_id")
-                    ->relationship("invoice", "invoice_number")
+                Forms\Components\Select::make('invoice_id')
+                    ->relationship('invoice', 'invoice_number')
                     ->searchable()
                     ->preload()
                     ->required(),
-                Forms\Components\Select::make("client_id")
-                    ->relationship("client", "name")
+                Forms\Components\Select::make('contract_id')
+                    ->relationship('contract', 'id')
+                    ->searchable()
+                    ->preload()
+                    ->nullable(),
+                Forms\Components\Select::make('client_id')
+                    ->relationship('client', 'name')
                     ->searchable()
                     ->preload()
                     ->required(),
-                Forms\Components\TextInput::make("amount")
+                Forms\Components\TextInput::make('amount')
                     ->numeric()
-                    ->step("0.001")
-                    ->prefix("OMR")
+                    ->step('0.001')
+                    ->prefix('OMR')
                     ->required(),
-                Forms\Components\DatePicker::make("payment_date")
+                Forms\Components\DatePicker::make('payment_date')
                     ->native(false)
-                    ->displayFormat("d/m/Y")
-                    ->format("Y-m-d")
+                    ->displayFormat('d/m/Y')
+                    ->format('Y-m-d')
                     ->required(),
-                Forms\Components\Select::make("payment_method")
+                Forms\Components\Select::make('payment_method')
                     ->options([
-                        "Cash" => "Cash",
-                        "Bank Transfer" => "Bank Transfer",
-                        "Check" => "Check",
-                        "Credit" => "Credit",
+                        'Cash' => 'Cash',
+                        'Bank Transfer' => 'Bank Transfer',
+                        'Check' => 'Check',
+                        'Credit' => 'Credit',
                     ])
                     ->required()
                     ->live(),
-                Forms\Components\FileUpload::make("receipt_image")
+                Forms\Components\FileUpload::make('receipt_image')
                     ->image()
-                    ->directory("receipts")
-                    ->visible(fn (Get $get) => $get("payment_method") === "Bank Transfer"),
-                Forms\Components\TextInput::make("reference_number")
+                    ->directory('receipts')
+                    ->visible(fn (Get $get) => $get('payment_method') === 'Bank Transfer'),
+                Forms\Components\TextInput::make('reference_number')
                     ->maxLength(255),
             ]);
     }
@@ -63,11 +68,11 @@ class PaymentResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make("invoice.invoice_number")->searchable()->sortable(),
-                Tables\Columns\TextColumn::make("client.name")->searchable()->sortable(),
-                Tables\Columns\TextColumn::make("amount")->money("OMR", divideBy: 1)->sortable(),
-                Tables\Columns\TextColumn::make("payment_date")->date("d/m/Y")->sortable(),
-                Tables\Columns\TextColumn::make("payment_method")->badge()->sortable(),
+                Tables\Columns\TextColumn::make('invoice.invoice_number')->searchable()->sortable(),
+                Tables\Columns\TextColumn::make('client.name')->searchable()->sortable(),
+                Tables\Columns\TextColumn::make('amount')->money('OMR', divideBy: 1)->sortable(),
+                Tables\Columns\TextColumn::make('payment_date')->date('d/m/Y')->sortable(),
+                Tables\Columns\TextColumn::make('payment_method')->badge()->sortable(),
             ])
             ->filters([])
             ->actions([
@@ -87,15 +92,15 @@ class PaymentResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()?->hasAnyRole(["Manager", "Sales Rep"]) ?? false;
+        return auth()->user()?->hasAnyRole(['Manager', 'Sales Rep']) ?? false;
     }
 
     public static function getPages(): array
     {
         return [
-            "index" => Pages\ListPayments::route("/"),
-            "create" => Pages\CreatePayment::route("/create"),
-            "edit" => Pages\EditPayment::route("/{record}/edit"),
+            'index' => Pages\ListPayments::route('/'),
+            'create' => Pages\CreatePayment::route('/create'),
+            'edit' => Pages\EditPayment::route('/{record}/edit'),
         ];
     }
 }
