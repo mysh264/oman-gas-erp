@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(["invoice_id", "client_id", "amount", "payment_date", "payment_method", "reference_number", "receipt_image"])]
+#[Fillable(["invoice_id", "contract_id", "client_id", "amount", "payment_date", "payment_method", "reference_number", "receipt_image"])]
 class Payment extends Model
 {
     protected function casts(): array
@@ -20,6 +20,11 @@ class Payment extends Model
     public function invoice(): BelongsTo
     {
         return $this->belongsTo(Invoice::class);
+    }
+
+    public function contract(): BelongsTo
+    {
+        return $this->belongsTo(Contract::class);
     }
 
     public function client(): BelongsTo
