@@ -3,7 +3,6 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ContractResource\Pages;
-use App\Filament\Resources\ContractResource\RelationManagers;
 use App\Models\Client;
 use App\Models\Contract;
 use Filament\Forms;
@@ -11,9 +10,6 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class ContractResource extends Resource
 {
@@ -42,6 +38,18 @@ class ContractResource extends Resource
                     ->native(false)
                     ->displayFormat('d/m/Y')
                     ->format('Y-m-d'),
+                Forms\Components\TextInput::make('total_value')
+                    ->numeric()
+                    ->prefix('OMR')
+                    ->default(0),
+                Forms\Components\Select::make('status')
+                    ->options([
+                        'active' => 'Active',
+                        'completed' => 'Completed',
+                    ])
+                    ->required(),
+                Forms\Components\Textarea::make('description')
+                    ->columnSpanFull(),
             ]);
     }
 
@@ -72,6 +80,9 @@ class ContractResource extends Resource
                         };
                     })
                     ->sortable(),
+                Tables\Columns\TextColumn::make('total_value')->money('OMR')->sortable(),
+                Tables\Columns\TextColumn::make('payments_sum_amount')->sum('payments', 'amount')->label('Received'),
+                Tables\Columns\TextColumn::make('balance')->state(fn (Contract $record) => (float) $record->total_value - (float) $record->payments()->sum('amount'))->money('OMR')->label('Balance'),
             ])
             ->filters([
                 //

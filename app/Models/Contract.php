@@ -12,7 +12,9 @@ class Contract extends Model
         'client_id',
         'start_date',
         'end_date',
+        'total_value',
         'status',
+        'description',
         'created_by',
     ];
 
@@ -21,6 +23,7 @@ class Contract extends Model
         return [
             'start_date' => 'date',
             'end_date' => 'date',
+            'total_value' => 'decimal:3',
         ];
     }
 
@@ -37,5 +40,10 @@ class Contract extends Model
     public function items(): HasMany
     {
         return $this->hasMany(ContractItem::class);
+    }
+
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
     }
 }
