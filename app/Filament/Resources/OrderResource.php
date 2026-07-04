@@ -83,6 +83,11 @@ class OrderResource extends Resource
         return [];
     }
 
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->hasAnyRole(["Manager", "Sales Rep"]) ?? false;
+    }
+
     public static function getPages(): array
     {
         return [
