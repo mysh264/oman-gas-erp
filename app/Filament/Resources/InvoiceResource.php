@@ -5,8 +5,11 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\InvoiceResource\Pages;
 use App\Filament\Resources\InvoiceResource\RelationManagers;
 use App\Models\Invoice;
+use App\Models\Product;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -34,10 +37,53 @@ class InvoiceResource extends Resource
                 Forms\Components\DatePicker::make('invoice_date')
                     ->default(now())
                     ->required(),
+                Forms\Components\Repeater::make('items')
+                    ->relationship()
+                    ->schema([
+                        Forms\Components\Select::make('product_id')
+                            ->relationship('product', 'name')
+                            ->searchable()
+                            ->preload()
+                            ->required()
+                            ->live()
+                            ->afterStateUpdated(function (?int $state, Set $set, Get $get): void {
+                                $price = Product::query()->find($state)?->default_price ?? 0;
+
+                                $set('unit_price', number_format((float) $price, 3, '.', ''));
+                                $set('line_total', self::calculateLineTotal($get));
+                            }),
+                        Forms\Components\TextInput::make('quantity')
+                            ->numeric()
+                            ->step('0.001')
+                            ->default(1)
+                            ->required()
+                            ->live(onBlur: true)
+                            ->afterStateUpdated(fn (Set $set, Get $get) => $set('line_total', self::calculateLineTotal($get))),
+                        Forms\Components\TextInput::make('unit_price')
+                            ->numeric()
+                            ->step('0.001')
+                            ->default(0)
+                            ->required()
+                            ->live(onBlur: true)
+                            ->afterStateUpdated(fn (Set $set, Get $get) => $set('line_total', self::calculateLineTotal($get))),
+                        Forms\Components\TextInput::make('line_total')
+                            ->numeric()
+                            ->step('0.001')
+                            ->readOnly()
+                            ->dehydrated()
+                            ->default(0),
+                    ])
+                    ->columns(4)
+                    ->defaultItems(0)
+                    ->live()
+                    ->afterStateUpdated(fn (Set $set, Get $get) => $set('total_amount', self::calculateInvoiceTotal($get('items') ?? [])))
+                    ->afterStateHydrated(fn (Set $set, Get $get) => $set('total_amount', self::calculateInvoiceTotal($get('items') ?? [])))
+                    ->collapsible(),
                 Forms\Components\TextInput::make('total_amount')
                     ->numeric()
                     ->step('0.001')
-                    ->required()
+                    ->readOnly()
+                    ->dehydrated()
                     ->default(0),
                 Forms\Components\Select::make('status')
                     ->options([
@@ -49,6 +95,18 @@ class InvoiceResource extends Resource
                     ->default('Draft')
                     ->required(),
             ]);
+    }
+
+    public static function calculateLineTotal(Get $get): string
+    {
+        return number_format((float) $get('quantity') * (float) $get('unit_price'), 3, '.', '');
+    }
+
+    public static function calculateInvoiceTotal(array $items): string
+    {
+        $total = collect($items)->sum(fn (array $item): float => (float) ($item['line_total'] ?? 0));
+
+        return number_format($total, 3, '.', '');
     }
 
     public static function table(Table $table): Table

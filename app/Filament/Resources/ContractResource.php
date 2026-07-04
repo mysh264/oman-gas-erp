@@ -46,6 +46,20 @@ class ContractResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextColumn::make('end_date')
                     ->date()
+                    ->badge()
+                    ->color(function (Contract $record): string {
+                        if (! $record->end_date) {
+                            return 'gray';
+                        }
+
+                        $daysRemaining = now()->startOfDay()->diffInDays($record->end_date->startOfDay(), false);
+
+                        return match (true) {
+                            $daysRemaining < 30 => 'danger',
+                            $daysRemaining < 60 => 'warning',
+                            default => 'success',
+                        };
+                    })
                     ->sortable(),
             ])
             ->filters([

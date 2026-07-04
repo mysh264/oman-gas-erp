@@ -7,6 +7,7 @@ use App\Filament\Resources\InventoryTransactionResource\RelationManagers;
 use App\Models\InventoryTransaction;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -42,7 +43,44 @@ class InventoryTransactionResource extends Resource
                     ->required(),
                 Forms\Components\TextInput::make('quantity')
                     ->required()
-                    ->numeric(),
+                    ->integer()
+                    ->minValue(1)
+                    ->rules([
+                        function (Get $get, ?InventoryTransaction $record): \Closure {
+                            return function (string $attribute, mixed $value, \Closure $fail) use ($get, $record): void {
+                                if ($get('transaction_type') !== 'Out') {
+                                    return;
+                                }
+
+                                $productId = $get('product_id');
+                                $warehouseId = $get('warehouse_id');
+
+                                if (! $productId || ! $warehouseId || ! is_numeric($value)) {
+                                    return;
+                                }
+
+                                $stockQuery = InventoryTransaction::query()
+                                    ->where('product_id', $productId)
+                                    ->where('warehouse_id', $warehouseId);
+
+                                if ($record?->exists) {
+                                    $stockQuery->whereKeyNot($record->getKey());
+                                }
+
+                                $currentStock = $stockQuery->get()->sum(function (InventoryTransaction $transaction): int {
+                                    return match ($transaction->transaction_type) {
+                                        'In', 'Adjustment' => (int) $transaction->quantity,
+                                        'Out' => -1 * (int) $transaction->quantity,
+                                        default => 0,
+                                    };
+                                });
+
+                                if ((int) $value > $currentStock) {
+                                    $fail('Insufficient stock in this warehouse.');
+                                }
+                            };
+                        },
+                    ]),
                 Forms\Components\TextInput::make('reference_number')
                     ->maxLength(255),
             ]);

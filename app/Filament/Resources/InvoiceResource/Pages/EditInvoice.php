@@ -16,4 +16,11 @@ class EditInvoice extends EditRecord
             Actions\DeleteAction::make(),
         ];
     }
+
+    protected function afterSave(): void
+    {
+        $this->record->update([
+            'total_amount' => $this->record->items()->sum('line_total'),
+        ]);
+    }
 }
