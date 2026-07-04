@@ -15,6 +15,7 @@ class Product extends Model
         'tax_rate',
         'unit',
         'is_active',
+        'stock_quantity',
     ];
 
     protected function casts(): array
@@ -22,6 +23,7 @@ class Product extends Model
         return [
             'default_price' => 'decimal:3',
             'tax_rate' => 'decimal:3',
+            'stock_quantity' => 'integer',
             'is_active' => 'boolean',
         ];
     }
