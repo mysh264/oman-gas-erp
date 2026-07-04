@@ -39,6 +39,8 @@ class InvoiceResource extends Resource
                     ->preload()
                     ->required(),
                 Forms\Components\DatePicker::make('invoice_date')
+                    ->displayFormat('d/m/Y')
+                    ->format('Y-m-d')
                     ->default(now())
                     ->required(),
                 Forms\Components\Repeater::make('items')
@@ -151,6 +153,26 @@ class InvoiceResource extends Resource
         return [
             //
         ];
+    }
+
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->hasRole('Manager') ?? false;
+    }
+
+    public static function canCreate(): bool
+    {
+        return auth()->user()?->hasRole('Manager') ?? false;
+    }
+
+    public static function canEdit(mixed $record): bool
+    {
+        return auth()->user()?->hasRole('Manager') ?? false;
+    }
+
+    public static function canDelete(mixed $record): bool
+    {
+        return auth()->user()?->hasRole('Manager') ?? false;
     }
 
     public static function getPages(): array

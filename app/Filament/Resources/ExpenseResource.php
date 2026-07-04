@@ -27,6 +27,8 @@ class ExpenseResource extends Resource
                     ->required()
                     ->maxLength(255),
                 Forms\Components\DatePicker::make('expense_date')
+                    ->displayFormat('d/m/Y')
+                    ->format('Y-m-d')
                     ->required(),
                 Forms\Components\Textarea::make('description')
                     ->columnSpanFull(),
@@ -84,6 +86,26 @@ class ExpenseResource extends Resource
         return [
             //
         ];
+    }
+
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->hasRole('Manager') ?? false;
+    }
+
+    public static function canCreate(): bool
+    {
+        return auth()->user()?->hasRole('Manager') ?? false;
+    }
+
+    public static function canEdit(mixed $record): bool
+    {
+        return auth()->user()?->hasRole('Manager') ?? false;
+    }
+
+    public static function canDelete(mixed $record): bool
+    {
+        return auth()->user()?->hasRole('Manager') ?? false;
     }
 
     public static function getPages(): array

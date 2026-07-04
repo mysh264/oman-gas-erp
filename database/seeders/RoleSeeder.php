@@ -3,16 +3,12 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
-class DatabaseSeeder extends Seeder
+class RoleSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
         $permissions = [
@@ -38,16 +34,6 @@ class DatabaseSeeder extends Seeder
             'create inventory transactions',
         ]);
 
-        $admin = User::updateOrCreate(
-            ['email' => 'admin@erp.com'],
-            [
-                'name' => 'Admin',
-                'employee_code' => 'ADMIN001',
-                'branch_id' => null,
-                'password' => Hash::make('Admin@123456'),
-            ],
-        );
-
-        $admin->assignRole($manager);
+        User::where('email', 'admin@erp.com')->first()?->assignRole($manager);
     }
 }

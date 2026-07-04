@@ -11,6 +11,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
@@ -33,8 +34,12 @@ class ContractResource extends Resource
                     ->preload()
                     ->required(),
                 Forms\Components\DatePicker::make('start_date')
+                    ->displayFormat('d/m/Y')
+                    ->format('Y-m-d')
                     ->required(),
-                Forms\Components\DatePicker::make('end_date'),
+                Forms\Components\DatePicker::make('end_date')
+                    ->displayFormat('d/m/Y')
+                    ->format('Y-m-d'),
             ]);
     }
 
@@ -84,6 +89,26 @@ class ContractResource extends Resource
         return [
             //
         ];
+    }
+
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->hasRole('Manager') ?? false;
+    }
+
+    public static function canCreate(): bool
+    {
+        return auth()->user()?->hasRole('Manager') ?? false;
+    }
+
+    public static function canEdit(mixed $record): bool
+    {
+        return auth()->user()?->hasRole('Manager') ?? false;
+    }
+
+    public static function canDelete(mixed $record): bool
+    {
+        return auth()->user()?->hasRole('Manager') ?? false;
     }
 
     public static function getPages(): array
