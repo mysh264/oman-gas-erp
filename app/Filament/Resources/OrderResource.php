@@ -62,11 +62,23 @@ class OrderResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('client.name')->searchable()->sortable(),
-                Tables\Columns\TextColumn::make('contract_id')->sortable(),
-                Tables\Columns\TextColumn::make('order_date')->date('d/m/Y')->sortable(),
-                Tables\Columns\TextColumn::make('status')->badge()->sortable(),
-                Tables\Columns\TextColumn::make('total_amount')->money('OMR', divideBy: 1)->sortable(),
+                Tables\Columns\TextColumn::make('client.name')
+                    ->label('Client')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('contract.id')
+                    ->label('Contract')
+                    ->formatStateUsing(fn ($state, Order $record) => "Contract #{$record->contract_id}")
+                    ->sortable()
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('order_date')
+                    ->date(),
+                Tables\Columns\TextColumn::make('total_amount')
+                    ->money('OMR'),
+                Tables\Columns\BadgeColumn::make('status')
+                    ->colors([
+                        'success' => 'Completed',
+                        'warning' => 'Confirmed',
+                    ]),
             ])
             ->filters([])
             ->actions([
