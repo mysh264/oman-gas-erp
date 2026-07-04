@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\InvoiceResource\Pages;
 use App\Filament\Resources\InvoiceResource\RelationManagers;
+use App\Models\Client;
 use App\Models\Invoice;
 use App\Models\Product;
 use Filament\Forms;
@@ -30,8 +31,10 @@ class InvoiceResource extends Resource
                     ->required()
                     ->maxLength(255),
                 Forms\Components\Select::make('client_id')
-                    ->relationship('client', 'name')
-                    ->getOptionLabelFromRecordUsing(fn ($record): string => $record->name)
+                    ->options(fn (): array => Client::query()
+                        ->orderBy('name')
+                        ->pluck('name', 'id')
+                        ->all())
                     ->searchable()
                     ->preload()
                     ->required(),
@@ -42,8 +45,10 @@ class InvoiceResource extends Resource
                     ->relationship()
                     ->schema([
                         Forms\Components\Select::make('product_id')
-                            ->relationship('product', 'name')
-                            ->getOptionLabelFromRecordUsing(fn ($record): string => $record->name ?: $record->sku)
+                            ->options(fn (): array => Product::query()
+                                ->orderBy('name')
+                                ->pluck('name', 'id')
+                                ->all())
                             ->searchable()
                             ->preload()
                             ->required()

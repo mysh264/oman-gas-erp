@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\ContractResource\Pages;
 use App\Filament\Resources\ContractResource\RelationManagers;
+use App\Models\Client;
 use App\Models\Contract;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -24,8 +25,10 @@ class ContractResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Select::make('client_id')
-                    ->relationship('client', 'name')
-                    ->getOptionLabelFromRecordUsing(fn ($record): string => $record->name)
+                    ->options(fn (): array => Client::query()
+                        ->orderBy('name')
+                        ->pluck('name', 'id')
+                        ->all())
                     ->searchable()
                     ->preload()
                     ->required(),

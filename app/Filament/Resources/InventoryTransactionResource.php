@@ -5,6 +5,8 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\InventoryTransactionResource\Pages;
 use App\Filament\Resources\InventoryTransactionResource\RelationManagers;
 use App\Models\InventoryTransaction;
+use App\Models\Product;
+use App\Models\Warehouse;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
@@ -25,14 +27,18 @@ class InventoryTransactionResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Select::make('product_id')
-                    ->relationship('product', 'name')
-                    ->getOptionLabelFromRecordUsing(fn ($record): string => $record->name ?: $record->sku)
+                    ->options(fn (): array => Product::query()
+                        ->orderBy('name')
+                        ->pluck('name', 'id')
+                        ->all())
                     ->searchable()
                     ->preload()
                     ->required(),
                 Forms\Components\Select::make('warehouse_id')
-                    ->relationship('warehouse', 'name')
-                    ->getOptionLabelFromRecordUsing(fn ($record): string => $record->name ?: $record->location_code)
+                    ->options(fn (): array => Warehouse::query()
+                        ->orderBy('name')
+                        ->pluck('name', 'id')
+                        ->all())
                     ->searchable()
                     ->preload()
                     ->required(),
