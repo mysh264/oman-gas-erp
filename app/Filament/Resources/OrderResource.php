@@ -14,44 +14,45 @@ class OrderResource extends Resource
 {
     protected static ?string $model = Order::class;
 
-    protected static ?string $navigationIcon = "heroicon-o-rectangle-stack";
+    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     public static function form(Form $form): Form
     {
         return $form
-            ->columns(["sm" => 1, "md" => 2])
+            ->columns(['sm' => 1, 'md' => 2])
             ->schema([
-                Forms\Components\Select::make("client_id")
-                    ->relationship("client", "name")
+                Forms\Components\Select::make('client_id')
+                    ->relationship('client', 'name')
                     ->searchable()
                     ->preload()
                     ->required(),
-                Forms\Components\Select::make("contract_id")
-                    ->relationship("contract", "id")
+                Forms\Components\Select::make('contract_id')
+                    ->relationship('contract', 'id')
+                    ->getOptionLabelFromRecordUsing(fn ($record) => $record->label)
                     ->searchable()
                     ->preload()
                     ->nullable(),
-                Forms\Components\DatePicker::make("order_date")
+                Forms\Components\DatePicker::make('order_date')
                     ->native(false)
-                    ->displayFormat("d/m/Y")
-                    ->format("Y-m-d")
+                    ->displayFormat('d/m/Y')
+                    ->format('Y-m-d')
                     ->required(),
-                Forms\Components\Select::make("status")
+                Forms\Components\Select::make('status')
                     ->options([
-                        "Draft" => "Draft",
-                        "Confirmed" => "Confirmed",
-                        "Completed" => "Completed",
-                        "Cancelled" => "Cancelled",
+                        'Draft' => 'Draft',
+                        'Confirmed' => 'Confirmed',
+                        'Completed' => 'Completed',
+                        'Cancelled' => 'Cancelled',
                     ])
                     ->required(),
-                Forms\Components\TextInput::make("tax_amount")
+                Forms\Components\TextInput::make('tax_amount')
                     ->numeric()
-                    ->step("0.001")
+                    ->step('0.001')
                     ->default(0)
                     ->required(),
-                Forms\Components\TextInput::make("total_amount")
+                Forms\Components\TextInput::make('total_amount')
                     ->numeric()
-                    ->step("0.001")
+                    ->step('0.001')
                     ->default(0)
                     ->required(),
             ]);
@@ -61,11 +62,11 @@ class OrderResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make("client.name")->searchable()->sortable(),
-                Tables\Columns\TextColumn::make("contract_id")->sortable(),
-                Tables\Columns\TextColumn::make("order_date")->date("d/m/Y")->sortable(),
-                Tables\Columns\TextColumn::make("status")->badge()->sortable(),
-                Tables\Columns\TextColumn::make("total_amount")->money("OMR", divideBy: 1)->sortable(),
+                Tables\Columns\TextColumn::make('client.name')->searchable()->sortable(),
+                Tables\Columns\TextColumn::make('contract_id')->sortable(),
+                Tables\Columns\TextColumn::make('order_date')->date('d/m/Y')->sortable(),
+                Tables\Columns\TextColumn::make('status')->badge()->sortable(),
+                Tables\Columns\TextColumn::make('total_amount')->money('OMR', divideBy: 1)->sortable(),
             ])
             ->filters([])
             ->actions([
@@ -91,9 +92,9 @@ class OrderResource extends Resource
     public static function getPages(): array
     {
         return [
-            "index" => Pages\ListOrders::route("/"),
-            "create" => Pages\CreateOrder::route("/create"),
-            "edit" => Pages\EditOrder::route("/{record}/edit"),
+            'index' => Pages\ListOrders::route('/'),
+            'create' => Pages\CreateOrder::route('/create'),
+            'edit' => Pages\EditOrder::route('/{record}/edit'),
         ];
     }
 }

@@ -37,6 +37,7 @@ class InvoiceResource extends Resource
                     ->required(),
                 Forms\Components\Select::make('contract_id')
                     ->relationship('contract', 'id')
+                    ->getOptionLabelFromRecordUsing(fn ($record) => $record->label)
                     ->searchable()
                     ->preload()
                     ->nullable(),

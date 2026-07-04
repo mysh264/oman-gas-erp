@@ -28,6 +28,11 @@ class Contract extends Model
         ];
     }
 
+    public function getLabelAttribute(): string
+    {
+        return "Contract #{$this->id} - " . ($this->client ? $this->client->name : 'No Client') . " ({$this->start_date})";
+    }
+
     public function client(): BelongsTo
     {
         return $this->belongsTo(Client::class);
