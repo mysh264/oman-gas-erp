@@ -11,6 +11,8 @@ class Product extends Model
     protected $fillable = [
         'sku',
         'name',
+        'gas_type',
+        'capacity',
         'description',
         'branch_id',
         'default_price',
@@ -23,6 +25,7 @@ class Product extends Model
     protected function casts(): array
     {
         return [
+            'capacity' => 'decimal:2',
             'default_price' => 'decimal:3',
             'tax_rate' => 'decimal:3',
             'stock_quantity' => 'integer',

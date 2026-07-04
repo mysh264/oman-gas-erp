@@ -29,11 +29,12 @@ class ContractResource extends Resource
                     ->searchable()
                     ->preload()
                     ->required(),
-                Forms\Components\Select::make('products')
-                    ->multiple()
-                    ->relationship('products', 'name')
-                    ->searchable()
-                    ->preload(),
+                Forms\Components\Section::make('Gas Supply Details')
+                    ->schema([
+                        Forms\Components\CheckboxList::make('products')
+                            ->relationship('products', 'name')
+                            ->columns(2),
+                    ]),
                 Forms\Components\DatePicker::make('start_date')
                     ->native(false)
                     ->displayFormat('d/m/Y')

@@ -34,6 +34,23 @@ class ProductResource extends Resource
                     ->step('0.001')
                     ->required()
                     ->default(0),
+                Forms\Components\Section::make('Gas Specifications')
+                    ->schema([
+                        Forms\Components\Select::make('gas_type')
+                            ->options([
+                                'LPG' => 'LPG',
+                                'Propane' => 'Propane',
+                                'Industrial' => 'Industrial',
+                            ]),
+                        Forms\Components\TextInput::make('capacity')->numeric(),
+                        Forms\Components\Select::make('unit')
+                            ->options([
+                                'kg' => 'kg',
+                                'ltr' => 'Liters',
+                                'bulk' => 'Bulk',
+                            ]),
+                    ])
+                    ->columns(3),
             ]);
     }
 
