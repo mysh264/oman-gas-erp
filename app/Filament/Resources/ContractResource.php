@@ -34,10 +34,12 @@ class ContractResource extends Resource
                     ->preload()
                     ->required(),
                 Forms\Components\DatePicker::make('start_date')
+                    ->native(false)
                     ->displayFormat('d/m/Y')
                     ->format('Y-m-d')
                     ->required(),
                 Forms\Components\DatePicker::make('end_date')
+                    ->native(false)
                     ->displayFormat('d/m/Y')
                     ->format('Y-m-d'),
             ]);
@@ -51,10 +53,10 @@ class ContractResource extends Resource
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('start_date')
-                    ->date()
+                    ->date('d/m/Y')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('end_date')
-                    ->date()
+                    ->date('d/m/Y')
                     ->badge()
                     ->color(function (Contract $record): string {
                         if (! $record->end_date) {

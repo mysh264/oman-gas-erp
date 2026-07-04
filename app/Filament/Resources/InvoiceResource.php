@@ -39,6 +39,7 @@ class InvoiceResource extends Resource
                     ->preload()
                     ->required(),
                 Forms\Components\DatePicker::make('invoice_date')
+                    ->native(false)
                     ->displayFormat('d/m/Y')
                     ->format('Y-m-d')
                     ->default(now())

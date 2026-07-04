@@ -27,6 +27,7 @@ class ExpenseResource extends Resource
                     ->required()
                     ->maxLength(255),
                 Forms\Components\DatePicker::make('expense_date')
+                    ->native(false)
                     ->displayFormat('d/m/Y')
                     ->format('Y-m-d')
                     ->required(),
@@ -49,7 +50,7 @@ class ExpenseResource extends Resource
                 Tables\Columns\TextColumn::make('category')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('expense_date')
-                    ->date()
+                    ->date('d/m/Y')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('receipt_path')
                     ->searchable(),
