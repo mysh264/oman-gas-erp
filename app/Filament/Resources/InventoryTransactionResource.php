@@ -26,11 +26,13 @@ class InventoryTransactionResource extends Resource
             ->schema([
                 Forms\Components\Select::make('product_id')
                     ->relationship('product', 'name')
+                    ->getOptionLabelFromRecordUsing(fn ($record): string => $record->name ?: $record->sku)
                     ->searchable()
                     ->preload()
                     ->required(),
                 Forms\Components\Select::make('warehouse_id')
                     ->relationship('warehouse', 'name')
+                    ->getOptionLabelFromRecordUsing(fn ($record): string => $record->name ?: $record->location_code)
                     ->searchable()
                     ->preload()
                     ->required(),

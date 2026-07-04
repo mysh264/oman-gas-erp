@@ -2,13 +2,18 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['name', 'location_code', 'address', 'is_active'])]
 class Warehouse extends Model
 {
+    protected $fillable = [
+        'name',
+        'location_code',
+        'address',
+        'is_active',
+    ];
+
     protected function casts(): array
     {
         return [

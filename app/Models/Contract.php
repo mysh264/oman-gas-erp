@@ -2,14 +2,20 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['client_id', 'start_date', 'end_date', 'status', 'created_by'])]
 class Contract extends Model
 {
+    protected $fillable = [
+        'client_id',
+        'start_date',
+        'end_date',
+        'status',
+        'created_by',
+    ];
+
     protected function casts(): array
     {
         return [

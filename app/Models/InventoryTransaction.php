@@ -2,13 +2,20 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['product_id', 'warehouse_id', 'transaction_type', 'quantity', 'reference_number', 'created_by'])]
 class InventoryTransaction extends Model
 {
+    protected $fillable = [
+        'product_id',
+        'warehouse_id',
+        'transaction_type',
+        'quantity',
+        'reference_number',
+        'created_by',
+    ];
+
     protected function casts(): array
     {
         return [

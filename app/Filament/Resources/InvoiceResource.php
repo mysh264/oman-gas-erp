@@ -31,6 +31,7 @@ class InvoiceResource extends Resource
                     ->maxLength(255),
                 Forms\Components\Select::make('client_id')
                     ->relationship('client', 'name')
+                    ->getOptionLabelFromRecordUsing(fn ($record): string => $record->name)
                     ->searchable()
                     ->preload()
                     ->required(),
@@ -42,6 +43,7 @@ class InvoiceResource extends Resource
                     ->schema([
                         Forms\Components\Select::make('product_id')
                             ->relationship('product', 'name')
+                            ->getOptionLabelFromRecordUsing(fn ($record): string => $record->name ?: $record->sku)
                             ->searchable()
                             ->preload()
                             ->required()

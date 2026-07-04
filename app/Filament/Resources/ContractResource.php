@@ -25,6 +25,7 @@ class ContractResource extends Resource
             ->schema([
                 Forms\Components\Select::make('client_id')
                     ->relationship('client', 'name')
+                    ->getOptionLabelFromRecordUsing(fn ($record): string => $record->name)
                     ->searchable()
                     ->preload()
                     ->required(),

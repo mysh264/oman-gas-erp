@@ -2,13 +2,23 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['name', 'vat_number', 'commercial_registration_number', 'country', 'city', 'address', 'phone', 'email', 'is_active'])]
 class Client extends Model
 {
+    protected $fillable = [
+        'name',
+        'vat_number',
+        'commercial_registration_number',
+        'country',
+        'city',
+        'address',
+        'phone',
+        'email',
+        'is_active',
+    ];
+
     protected function casts(): array
     {
         return [
