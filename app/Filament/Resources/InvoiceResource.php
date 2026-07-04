@@ -37,7 +37,7 @@ class InvoiceResource extends Resource
                     ->required(),
                 Forms\Components\Select::make('contract_id')
                     ->relationship('contract', 'id')
-                    ->getOptionLabelFromRecordUsing(fn ($record) => $record->label)
+                    ->getOptionLabelFromRecordUsing(fn ($record) => $record->custom_id ?? "Contract #{$record->id}")
                     ->searchable()
                     ->preload()
                     ->nullable(),
@@ -157,6 +157,10 @@ class InvoiceResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('invoice_number')->searchable()->sortable(),
                 Tables\Columns\TextColumn::make('client.name')->searchable()->sortable(),
+                Tables\Columns\TextColumn::make('contract.custom_id')
+                    ->label('Contract Ref')
+                    ->default(fn ($record) => "Contract #{$record->contract_id}")
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('subtotal')->money('OMR', divideBy: 1)->sortable(),
                 Tables\Columns\TextColumn::make('vat_amount')->money('OMR', divideBy: 1)->sortable(),
                 Tables\Columns\TextColumn::make('total_amount')->money('OMR', divideBy: 1)->sortable(),

@@ -28,7 +28,7 @@ class PaymentResource extends Resource
                     ->required(),
                 Forms\Components\Select::make('contract_id')
                     ->relationship('contract', 'id')
-                    ->getOptionLabelFromRecordUsing(fn ($record) => $record->label)
+                    ->getOptionLabelFromRecordUsing(fn ($record) => $record->custom_id ?? "Contract #{$record->id}")
                     ->searchable()
                     ->preload()
                     ->nullable(),
@@ -71,6 +71,10 @@ class PaymentResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('invoice.invoice_number')->searchable()->sortable(),
                 Tables\Columns\TextColumn::make('client.name')->searchable()->sortable(),
+                Tables\Columns\TextColumn::make('contract.custom_id')
+                    ->label('Contract Ref')
+                    ->default(fn ($record) => "Contract #{$record->contract_id}")
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('amount')->money('OMR', divideBy: 1)->sortable(),
                 Tables\Columns\TextColumn::make('payment_date')->date('d/m/Y')->sortable(),
                 Tables\Columns\TextColumn::make('payment_method')->badge()->sortable(),

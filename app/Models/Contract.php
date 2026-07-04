@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Contract extends Model
 {
     protected $fillable = [
+        'custom_id',
         'client_id',
         'start_date',
         'end_date',
@@ -30,7 +31,9 @@ class Contract extends Model
 
     public function getLabelAttribute(): string
     {
-        return "Contract #{$this->id} - " . ($this->client ? $this->client->name : 'No Client') . " ({$this->start_date})";
+        $identifier = $this->custom_id ?? "Contract #{$this->id}";
+
+        return "{$identifier} - " . ($this->client ? $this->client->name : 'No Client');
     }
 
     public function client(): BelongsTo

@@ -29,6 +29,9 @@ class ContractResource extends Resource
                     ->searchable()
                     ->preload()
                     ->required(),
+                Forms\Components\TextInput::make('custom_id')
+                    ->label('Contract Reference ID')
+                    ->placeholder('e.g., GAS-2026-001'),
                 Forms\Components\Section::make('Gas Supply Details')
                     ->schema([
                         Forms\Components\CheckboxList::make('products')

@@ -28,7 +28,7 @@ class OrderResource extends Resource
                     ->required(),
                 Forms\Components\Select::make('contract_id')
                     ->relationship('contract', 'id')
-                    ->getOptionLabelFromRecordUsing(fn ($record) => $record->label)
+                    ->getOptionLabelFromRecordUsing(fn ($record) => $record->custom_id ?? "Contract #{$record->id}")
                     ->searchable()
                     ->preload()
                     ->nullable(),
@@ -65,11 +65,10 @@ class OrderResource extends Resource
                 Tables\Columns\TextColumn::make('client.name')
                     ->label('Client')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('contract.id')
-                    ->label('Contract')
-                    ->formatStateUsing(fn ($state, Order $record) => "Contract #{$record->contract_id}")
-                    ->sortable()
-                    ->searchable(),
+                Tables\Columns\TextColumn::make('contract.custom_id')
+                    ->label('Contract Ref')
+                    ->default(fn ($record) => "Contract #{$record->contract_id}")
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('order_date')
                     ->date(),
                 Tables\Columns\TextColumn::make('total_amount')
