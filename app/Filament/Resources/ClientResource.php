@@ -59,7 +59,7 @@ class ClientResource extends Resource
                 Tables\Columns\TextColumn::make("city")->searchable()->sortable(),
                 Tables\Columns\TextColumn::make("phone_mobile")->label("Mobile")->searchable(),
                 Tables\Columns\TextColumn::make("contracts_count")->counts("contracts")->label("Contracts"),
-                Tables\Columns\TextColumn::make("invoices_sum_amount")->sum("invoices", "amount")->label("Total OMR"),
+                Tables\Columns\TextColumn::make("invoices_sum_total_amount")->sum("invoices", "total_amount")->label("Total OMR"),
             ])
             ->filters([])
             ->actions([
