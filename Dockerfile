@@ -28,7 +28,10 @@ RUN docker-php-ext-install \
     opcache
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+COPY docker/entrypoint.sh /usr/local/bin/gas-erp-entrypoint.sh
+RUN chmod +x /usr/local/bin/gas-erp-entrypoint.sh
 
 WORKDIR /var/www/html
 
+ENTRYPOINT ["/usr/local/bin/gas-erp-entrypoint.sh"]
 CMD ["php-fpm"]

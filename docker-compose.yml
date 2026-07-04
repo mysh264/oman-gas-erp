@@ -17,25 +17,25 @@ x-app-service: &app-service
     redis:
       condition: service_healthy
   networks:
-    - gas_erp_internal
+    - default
 
 services:
   app:
     <<: *app-service
     container_name: gas_erp_app
 
-  nginx:
+  gas_erp_nginx:
     image: nginx:alpine
     container_name: gas_erp_nginx
     restart: unless-stopped
     volumes:
       - .:/var/www/html:ro
-      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
       app:
         condition: service_started
     networks:
-      - gas_erp_internal
+      - default
       - docker_shared
 
   postgres:
@@ -54,7 +54,7 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - gas_erp_internal
+      - default
 
   redis:
     image: redis:7-alpine
@@ -69,7 +69,7 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - gas_erp_internal
+      - default
 
   queue:
     <<: *app-service
@@ -85,18 +85,23 @@ services:
     <<: *app-build
     container_name: gas_erp_composer
     working_dir: /var/www/html
-    entrypoint: composer
+    entrypoint:
+      - /usr/local/bin/gas-erp-entrypoint.sh
+      - composer
     profiles:
       - tools
     volumes:
       - .:/var/www/html
     networks:
-      - gas_erp_internal
+      - default
 
   artisan:
     <<: *app-service
     container_name: gas_erp_artisan
-    entrypoint: php artisan
+    entrypoint:
+      - /usr/local/bin/gas-erp-entrypoint.sh
+      - php
+      - artisan
     restart: "no"
     profiles:
       - tools
@@ -111,10 +116,10 @@ services:
     volumes:
       - .:/var/www/html
     networks:
-      - gas_erp_internal
+      - default
 
 networks:
-  gas_erp_internal:
+  default:
     driver: bridge
 
   docker_shared:
