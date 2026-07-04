@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['client_id', 'order_id', 'invoice_date', 'due_date', 'status', 'subtotal', 'tax_amount', 'total_amount', 'created_by'])]
+#[Fillable(['invoice_number', 'client_id', 'order_id', 'invoice_date', 'due_date', 'status', 'subtotal', 'tax_amount', 'total_amount', 'created_by'])]
 class Invoice extends Model
 {
     protected function casts(): array
