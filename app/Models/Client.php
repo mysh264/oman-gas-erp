@@ -8,22 +8,24 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Client extends Model
 {
     protected $fillable = [
-        'name',
-        'cr_number',
-        'vat_number',
-        'commercial_registration_number',
-        'country',
-        'city',
-        'address',
-        'phone',
-        'email',
-        'is_active',
+        "name",
+        "cr_number",
+        "vat_number",
+        "commercial_registration_number",
+        "country",
+        "city",
+        "address",
+        "phone",
+        "phone_mobile",
+        "phone_landline",
+        "email",
+        "is_active",
     ];
 
     protected function casts(): array
     {
         return [
-            'is_active' => 'boolean',
+            "is_active" => "boolean",
         ];
     }
 
