@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Order;
+use App\Models\Payment;
 use App\Models\Contract;
 use App\Models\Invoice;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -38,5 +40,27 @@ class PdfController extends Controller
         ]);
 
         return $pdf->stream('contract_'.$id.'.pdf');
+    }
+
+    public function printHandoff(): Response
+    {
+        $orders = Order::query()
+            ->whereDate('created_at', today())
+            ->with('client')
+            ->latest()
+            ->get();
+
+        $payments = Payment::query()
+            ->whereDate('created_at', today())
+            ->with('invoice')
+            ->latest()
+            ->get();
+
+        $pdf = Pdf::loadView('pdf.handoff', [
+            'orders' => $orders,
+            'payments' => $payments,
+        ]);
+
+        return $pdf->stream('daily_handoff_'.now()->format('Y-m-d').'.pdf');
     }
 }
