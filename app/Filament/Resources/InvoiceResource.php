@@ -137,7 +137,9 @@ class InvoiceResource extends Resource
                     ->sortable(),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('branch_id')
+                    ->relationship('branch', 'name')
+                    ->label('Filter by Branch'),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

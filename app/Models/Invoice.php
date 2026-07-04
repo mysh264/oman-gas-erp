@@ -10,6 +10,7 @@ class Invoice extends Model
 {
     protected $fillable = [
         'invoice_number',
+        'branch_id',
         'client_id',
         'order_id',
         'invoice_date',
@@ -35,6 +36,11 @@ class Invoice extends Model
     public function client(): BelongsTo
     {
         return $this->belongsTo(Client::class);
+    }
+
+    public function branch(): BelongsTo
+    {
+        return $this->belongsTo(Branch::class);
     }
 
     public function order(): BelongsTo

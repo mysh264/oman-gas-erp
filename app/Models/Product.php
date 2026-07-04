@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Product extends Model
 {
@@ -11,6 +12,7 @@ class Product extends Model
         'sku',
         'name',
         'description',
+        'branch_id',
         'default_price',
         'tax_rate',
         'unit',
@@ -31,6 +33,11 @@ class Product extends Model
     public function contractItems(): HasMany
     {
         return $this->hasMany(ContractItem::class);
+    }
+
+    public function branch(): BelongsTo
+    {
+        return $this->belongsTo(Branch::class);
     }
 
     public function inventoryTransactions(): HasMany
