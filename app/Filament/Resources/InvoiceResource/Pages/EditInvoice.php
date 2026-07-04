@@ -24,8 +24,10 @@ class EditInvoice extends EditRecord
 
     protected function afterSave(): void
     {
-        $this->record->update([
-            'total_amount' => $this->record->items()->sum('line_total'),
-        ]);
+        $summary = InvoiceResource::calculateInvoiceSummary(
+            $this->record->items()->get()->map(fn ($item): array => ['line_total' => $item->line_total])->all()
+        );
+
+        $this->record->update($summary);
     }
 }

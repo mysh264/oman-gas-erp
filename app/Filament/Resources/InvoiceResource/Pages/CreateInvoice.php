@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\InvoiceResource\Pages;
 
 use App\Filament\Resources\InvoiceResource;
-use Filament\Actions;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateInvoice extends CreateRecord
@@ -12,8 +11,10 @@ class CreateInvoice extends CreateRecord
 
     protected function afterCreate(): void
     {
-        $this->record->update([
-            'total_amount' => $this->record->items()->sum('line_total'),
-        ]);
+        $summary = InvoiceResource::calculateInvoiceSummary(
+            $this->record->items()->get()->map(fn ($item): array => ['line_total' => $item->line_total])->all()
+        );
+
+        $this->record->update($summary);
     }
 }

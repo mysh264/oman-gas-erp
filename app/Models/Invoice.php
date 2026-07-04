@@ -17,6 +17,7 @@ class Invoice extends Model
         'due_date',
         'status',
         'subtotal',
+        'vat_amount',
         'tax_amount',
         'total_amount',
         'created_by',
@@ -28,6 +29,7 @@ class Invoice extends Model
             'invoice_date' => 'date',
             'due_date' => 'date',
             'subtotal' => 'decimal:3',
+            'vat_amount' => 'decimal:3',
             'tax_amount' => 'decimal:3',
             'total_amount' => 'decimal:3',
         ];
