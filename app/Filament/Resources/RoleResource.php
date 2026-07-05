@@ -31,19 +31,20 @@ class RoleResource extends Resource
                 ->unique(ignoreRecord: true)
                 ->label('Role Name')
                 ->columnSpanFull(),
-            Forms\Components\Tabs::make('Permissions')
+            Forms\Components\Grid::make(3)
                 ->columnSpanFull()
-                ->tabs([
-                    Forms\Components\Tabs\Tab::make('Resource Actions')
+                ->schema([
+                    Forms\Components\Section::make('Resource Permissions')
+                        ->columnSpan(2)
                         ->schema([
-                            Forms\Components\Grid::make(1)
-                                ->schema(
+                            Forms\Components\Tabs::make('Resources')
+                                ->tabs(
                                     collect(static::permissionResources())
-                                        ->map(fn (string $resource) => Forms\Components\Fieldset::make(ucfirst($resource) . ' Permissions')
+                                        ->map(fn (string $resource) => Forms\Components\Tabs\Tab::make(ucfirst($resource))
                                             ->schema([
                                                 Forms\Components\CheckboxList::make("permission_groups.{$resource}")
                                                     ->options(static::permissionOptionsFor($resource))
-                                                    ->columns(4)
+                                                    ->columns(2)
                                                     ->bulkToggleable()
                                                     ->dehydrated(false)
                                                     ->label('')
@@ -60,35 +61,32 @@ class RoleResource extends Resource
                                                                 ->all()
                                                         );
                                                     }),
-                                            ])
-                                        )
+                                            ]))
                                         ->toArray()
                                 ),
                         ]),
-                    Forms\Components\Tabs\Tab::make('Global')
+                    Forms\Components\Section::make('Global Privileges')
+                        ->columnSpan(1)
                         ->schema([
-                            Forms\Components\Fieldset::make('Global Permissions')
-                                ->schema([
-                                    Forms\Components\CheckboxList::make('permission_groups.global')
-                                        ->options(static::systemPermissionOptions())
-                                        ->columns(4)
-                                        ->bulkToggleable()
-                                        ->dehydrated(false)
-                                        ->label('')
-                                        ->afterStateHydrated(function (Forms\Components\CheckboxList $component, ?Role $record): void {
-                                            if (! $record?->exists) {
-                                                return;
-                                            }
+                            Forms\Components\CheckboxList::make('permission_groups.global')
+                                ->options(static::systemPermissionOptions())
+                                ->columns(1)
+                                ->bulkToggleable()
+                                ->dehydrated(false)
+                                ->label('Danger Zone')
+                                ->afterStateHydrated(function (Forms\Components\CheckboxList $component, ?Role $record): void {
+                                    if (! $record?->exists) {
+                                        return;
+                                    }
 
-                                            $component->state(
-                                                $record->permissions()
-                                                    ->whereIn('name', static::systemPermissionNames())
-                                                    ->pluck('permissions.id')
-                                                    ->map(fn ($id): string => (string) $id)
-                                                    ->all()
-                                            );
-                                        }),
-                                ]),
+                                    $component->state(
+                                        $record->permissions()
+                                            ->whereIn('name', static::systemPermissionNames())
+                                            ->pluck('permissions.id')
+                                            ->map(fn ($id): string => (string) $id)
+                                            ->all()
+                                    );
+                                }),
                         ]),
                 ]),
         ]);
@@ -177,7 +175,7 @@ class RoleResource extends Resource
             ->whereIn('name', static::systemPermissionNames())
             ->get()
             ->mapWithKeys(fn (Permission $permission): array => [
-                $permission->id => 'Manage All Data (Bypass Ownership)',
+                $permission->id => 'Enable Global Management (Can see all data)',
             ])
             ->all();
     }
