@@ -35,19 +35,40 @@ class AuditLogResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('description')
-                    ->searchable()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('causer_name')
-                    ->label('User')
-                    ->state(fn (Activity $record): string => $record->causer?->name
-                        ?? $record->causer?->email
-                        ?? 'System'),
                 Tables\Columns\TextColumn::make('created_at')
+                    ->label('Date')
                     ->dateTime()
                     ->sortable(),
+                Tables\Columns\TextColumn::make('causer.name')
+                    ->label('User')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('subject_type')
+                    ->label('Resource')
+                    ->formatStateUsing(fn ($state) => class_basename($state)),
+                Tables\Columns\TextColumn::make('event')
+                    ->label('Action')
+                    ->badge(),
+                Tables\Columns\TextColumn::make('attribute_changes')
+                    ->label('Changes')
+                    ->formatStateUsing(function ($state): string {
+                        $changes = is_array($state) ? $state : (method_exists($state, 'toArray') ? $state->toArray() : []);
+                        $old = $changes['old'] ?? [];
+                        $new = $changes['attributes'] ?? [];
+
+                        return count($old) > 0 ? 'Changed values' : 'Created/Deleted';
+                    })
+                    ->description(function ($record): string {
+                        return json_encode($record->attribute_changes, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+                    }),
             ])
-            ->filters([])
+            ->filters([
+                Tables\Filters\SelectFilter::make('event')->options([
+                    'created' => 'Created',
+                    'updated' => 'Updated',
+                    'deleted' => 'Deleted',
+                ]),
+            ])
+            ->defaultSort('created_at', 'desc')
             ->actions([])
             ->bulkActions([]);
     }
