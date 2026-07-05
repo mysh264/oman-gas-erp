@@ -39,6 +39,10 @@ class AuditLogResource extends Resource
                     ->label('Date')
                     ->dateTime()
                     ->sortable(),
+                Tables\Columns\TextColumn::make('subject_id')
+                    ->label('Record ID')
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('causer.name')
                     ->label('User')
                     ->sortable(),
@@ -48,18 +52,17 @@ class AuditLogResource extends Resource
                 Tables\Columns\TextColumn::make('event')
                     ->label('Action')
                     ->badge(),
-                Tables\Columns\TextColumn::make('attribute_changes')
-                    ->label('Changes')
-                    ->formatStateUsing(function ($state): string {
-                        $changes = is_array($state) ? $state : (method_exists($state, 'toArray') ? $state->toArray() : []);
-                        $old = $changes['old'] ?? [];
-                        $new = $changes['attributes'] ?? [];
-
-                        return count($old) > 0 ? 'Changed values' : 'Created/Deleted';
-                    })
-                    ->description(function ($record): string {
-                        return json_encode($record->attribute_changes, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-                    }),
+                Tables\Columns\TextColumn::make('properties')
+                    ->label('Changes Summary')
+                    ->formatStateUsing(fn ($state, Activity $record): string => count($record->attribute_changes['attributes'] ?? []) . ' field(s) changed')
+                    ->action(
+                        Tables\Actions\Action::make('view_changes')
+                            ->label('View Details')
+                            ->modalHeading('Change Details')
+                            ->modalSubmitAction(false)
+                            ->modalCancelActionLabel('Close')
+                            ->modalContent(fn (Activity $record) => view('filament.tables.audit-diff', ['data' => $record->attribute_changes?->toArray() ?? []])),
+                    ),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('event')->options([
