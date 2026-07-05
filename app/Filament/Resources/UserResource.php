@@ -27,7 +27,18 @@ class UserResource extends Resource
                 ->preload()
                 ->nullable(),
             Forms\Components\TextInput::make("email")->email()->required()->maxLength(255),
-            Forms\Components\TextInput::make("password")->password()->required(fn (string $context): bool => $context === "create")->dehydrateStateUsing(fn (?string $state): ?string => filled($state) ? bcrypt($state) : null)->dehydrated(fn (?string $state): bool => filled($state))->maxLength(255),
+            Forms\Components\TextInput::make("password")
+                ->password()
+                ->required(fn (string $context): bool => $context === "create")
+                ->dehydrateStateUsing(fn (?string $state): ?string => filled($state) ? bcrypt($state) : null)
+                ->dehydrated(fn (?string $state): bool => filled($state))
+                ->maxLength(255),
+            Forms\Components\Select::make("roles")
+                ->multiple()
+                ->relationship("roles", "name")
+                ->preload()
+                ->searchable()
+                ->label("User Roles (Pools)"),
         ]);
     }
 
@@ -38,6 +49,10 @@ class UserResource extends Resource
             Tables\Columns\TextColumn::make("employee_code")->searchable()->sortable(),
             Tables\Columns\TextColumn::make("branch.name")->searchable()->sortable(),
             Tables\Columns\TextColumn::make("email")->searchable()->sortable(),
+            Tables\Columns\TextColumn::make("roles.name")
+                ->badge()
+                ->separator(",")
+                ->label("Roles"),
         ])->filters([])->actions([
             Tables\Actions\EditAction::make(),
         ])->bulkActions([
@@ -54,22 +69,22 @@ class UserResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()?->hasRole("Manager") ?? false;
+        return auth()->user()?->hasAnyRole(["Admin", "Manager"]) ?? false;
     }
 
     public static function canCreate(): bool
     {
-        return auth()->user()?->hasRole("Manager") ?? false;
+        return auth()->user()?->hasAnyRole(["Admin", "Manager"]) ?? false;
     }
 
     public static function canEdit(mixed $record): bool
     {
-        return auth()->user()?->hasRole("Manager") ?? false;
+        return auth()->user()?->hasAnyRole(["Admin", "Manager"]) ?? false;
     }
 
     public static function canDelete(mixed $record): bool
     {
-        return auth()->user()?->hasRole("Manager") ?? false;
+        return auth()->user()?->hasAnyRole(["Admin", "Manager"]) ?? false;
     }
 
     public static function getPages(): array
