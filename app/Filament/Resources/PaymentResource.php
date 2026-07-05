@@ -99,7 +99,12 @@ class PaymentResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()?->can('view_any_payment') ?? false;
+        return auth()->user()?->can('list_access_payment') ?? false;
+    }
+
+    public static function canView(\Illuminate\Database\Eloquent\Model $record): bool
+    {
+        return auth()->user()?->can('open_details_payment') ?? false;
     }
 
     public static function canCreate(): bool

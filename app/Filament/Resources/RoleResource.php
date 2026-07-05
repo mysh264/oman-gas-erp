@@ -155,8 +155,8 @@ class RoleResource extends Resource
                     else 6
                 end',
                 [
-                    "view_any_{$resource}",
-                    "view_{$resource}",
+                    "list_access_{$resource}",
+                    "open_details_{$resource}",
                     "create_{$resource}",
                     "update_{$resource}",
                     "delete_{$resource}",
@@ -187,6 +187,14 @@ class RoleResource extends Resource
 
     protected static function permissionActionLabel(string $permission, string $resource): string
     {
+        if (str_starts_with($permission, 'list_access_')) {
+            return 'List Access';
+        }
+
+        if (str_starts_with($permission, 'open_details_')) {
+            return 'Open Details';
+        }
+
         $action = str($permission)
             ->beforeLast("_{$resource}")
             ->replace('_', ' ')

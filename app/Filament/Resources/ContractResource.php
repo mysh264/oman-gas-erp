@@ -171,7 +171,12 @@ class ContractResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()?->can('view_any_contract') ?? false;
+        return auth()->user()?->can('list_access_contract') ?? false;
+    }
+
+    public static function canView(\Illuminate\Database\Eloquent\Model $record): bool
+    {
+        return auth()->user()?->can('open_details_contract') ?? false;
     }
 
     public static function canCreate(): bool
