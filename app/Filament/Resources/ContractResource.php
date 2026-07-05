@@ -189,6 +189,18 @@ class ContractResource extends Resource
         return auth()->user()?->can('delete_contract') ?? false;
     }
 
+
+    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        $query = parent::getEloquentQuery();
+
+        if (! auth()->user()?->can('manage_all_resources')) {
+            return $query->where('user_id', auth()->id());
+        }
+
+        return $query;
+    }
+
     public static function getPages(): array
     {
         return [

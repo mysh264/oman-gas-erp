@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\AssignsCurrentUser;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Client extends Model
 {
+    use AssignsCurrentUser;
     protected $fillable = [
+        "user_id",
         "name",
         "cr_number",
         "vat_number",

@@ -2,14 +2,16 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\AssignsCurrentUser;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['client_id', 'contract_id', 'order_date', 'status', 'tax_amount', 'total_amount'])]
+#[Fillable(['user_id', 'client_id', 'contract_id', 'order_date', 'status', 'tax_amount', 'total_amount'])]
 class Order extends Model
 {
+    use AssignsCurrentUser;
     protected function casts(): array
     {
         return [

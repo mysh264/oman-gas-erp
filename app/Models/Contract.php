@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\AssignsCurrentUser;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,7 +10,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Contract extends Model
 {
+    use AssignsCurrentUser;
     protected $fillable = [
+        'user_id',
         'custom_id',
         'client_id',
         'start_date',

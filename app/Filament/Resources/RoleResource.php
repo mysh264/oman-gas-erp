@@ -30,12 +30,15 @@ class RoleResource extends Resource
                     ->required()
                     ->unique(ignoreRecord: true)
                     ->label("Role Name"),
-                Forms\Components\CheckboxList::make("permissions")
-                    ->relationship("permissions", "name")
-                    ->getOptionLabelFromRecordUsing(fn ($record) => ucwords(str_replace("_", " ", $record->name)))
-                    ->columns(3)
-                    ->bulkToggleable()
-                    ->label("Assigned Permissions"),
+                Forms\Components\Section::make("Resource Permissions")
+                    ->schema([
+                        Forms\Components\CheckboxList::make("permissions")
+                            ->relationship("permissions", "name")
+                            ->getOptionLabelFromRecordUsing(fn ($record) => ucwords(str_replace("_", " ", $record->name)))
+                            ->columns(4)
+                            ->bulkToggleable()
+                            ->label(""),
+                    ]),
             ]);
     }
 

@@ -2,13 +2,16 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\AssignsCurrentUser;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Invoice extends Model
 {
+    use AssignsCurrentUser;
     protected $fillable = [
+        'user_id',
         'invoice_number',
         'branch_id',
         'client_id',
