@@ -6,10 +6,14 @@ use App\Models\Concerns\AssignsCurrentUser;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 
 class Invoice extends Model
 {
+    use LogsActivity;
     use AssignsCurrentUser;
+
     protected $fillable = [
         'user_id',
         'invoice_number',
@@ -36,6 +40,11 @@ class Invoice extends Model
             'tax_amount' => 'decimal:3',
             'total_amount' => 'decimal:3',
         ];
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()->logAll()->logOnlyDirty();
     }
 
     public function client(): BelongsTo

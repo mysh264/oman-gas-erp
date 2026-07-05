@@ -6,17 +6,26 @@ use App\Models\Concerns\AssignsCurrentUser;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 
 #[Fillable(["user_id", "invoice_id", "contract_id", "client_id", "amount", "payment_date", "payment_method", "reference_number", "receipt_image"])]
 class Payment extends Model
 {
+    use LogsActivity;
     use AssignsCurrentUser;
+
     protected function casts(): array
     {
         return [
             "amount" => "decimal:3",
             "payment_date" => "date",
         ];
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()->logAll()->logOnlyDirty();
     }
 
     public function invoice(): BelongsTo

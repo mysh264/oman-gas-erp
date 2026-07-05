@@ -31,7 +31,7 @@ class RoleResource extends Resource
                 ->unique(ignoreRecord: true)
                 ->label('Role Name')
                 ->columnSpanFull(),
-            Forms\Components\Grid::make(3)
+            Forms\Components\Grid::make(4)
                 ->columnSpanFull()
                 ->schema([
                     Forms\Components\Section::make('Resource Permissions')
@@ -82,6 +82,29 @@ class RoleResource extends Resource
                                     $component->state(
                                         $record->permissions()
                                             ->whereIn('name', static::systemPermissionNames())
+                                            ->pluck('permissions.id')
+                                            ->map(fn ($id): string => (string) $id)
+                                            ->all()
+                                    );
+                                }),
+                        ]),
+                    Forms\Components\Section::make('Audit')
+                        ->columnSpan(1)
+                        ->schema([
+                            Forms\Components\CheckboxList::make('permission_groups.audit')
+                                ->options(static::auditPermissionOptions())
+                                ->columns(1)
+                                ->bulkToggleable()
+                                ->dehydrated(false)
+                                ->label('Audit Access')
+                                ->afterStateHydrated(function (Forms\Components\CheckboxList $component, ?Role $record): void {
+                                    if (! $record?->exists) {
+                                        return;
+                                    }
+
+                                    $component->state(
+                                        $record->permissions()
+                                            ->whereIn('name', static::auditPermissionNames())
                                             ->pluck('permissions.id')
                                             ->map(fn ($id): string => (string) $id)
                                             ->all()
@@ -180,9 +203,25 @@ class RoleResource extends Resource
             ->all();
     }
 
+    protected static function auditPermissionOptions(): array
+    {
+        return Permission::query()
+            ->whereIn('name', static::auditPermissionNames())
+            ->get()
+            ->mapWithKeys(fn (Permission $permission): array => [
+                $permission->id => 'View Audit Logs',
+            ])
+            ->all();
+    }
+
     protected static function systemPermissionNames(): array
     {
         return ['manage_all_resources'];
+    }
+
+    protected static function auditPermissionNames(): array
+    {
+        return ['view_audit_logs_audit_log'];
     }
 
     protected static function permissionActionLabel(string $permission, string $resource): string

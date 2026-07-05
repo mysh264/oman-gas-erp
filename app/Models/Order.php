@@ -7,11 +7,15 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 
 #[Fillable(['user_id', 'client_id', 'contract_id', 'order_date', 'status', 'tax_amount', 'total_amount'])]
 class Order extends Model
 {
+    use LogsActivity;
     use AssignsCurrentUser;
+
     protected function casts(): array
     {
         return [
@@ -19,6 +23,11 @@ class Order extends Model
             'tax_amount' => 'decimal:3',
             'total_amount' => 'decimal:3',
         ];
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()->logAll()->logOnlyDirty();
     }
 
     public function client(): BelongsTo

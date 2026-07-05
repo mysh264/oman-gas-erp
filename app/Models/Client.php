@@ -5,10 +5,14 @@ namespace App\Models;
 use App\Models\Concerns\AssignsCurrentUser;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 
 class Client extends Model
 {
+    use LogsActivity;
     use AssignsCurrentUser;
+
     protected $fillable = [
         "user_id",
         "name",
@@ -30,6 +34,11 @@ class Client extends Model
         return [
             "is_active" => "boolean",
         ];
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()->logAll()->logOnlyDirty();
     }
 
     public function contacts(): HasMany

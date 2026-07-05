@@ -4,13 +4,17 @@ namespace App\Models;
 
 use App\Models\Concerns\AssignsCurrentUser;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 
 class Contract extends Model
 {
+    use LogsActivity;
     use AssignsCurrentUser;
+
     protected $fillable = [
         'user_id',
         'custom_id',
@@ -46,6 +50,11 @@ class Contract extends Model
 
             $contract->custom_id = "GAS-{$date}-{$count}";
         });
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()->logAll()->logOnlyDirty();
     }
 
     public function getLabelAttribute(): string
