@@ -58,7 +58,9 @@
 <body>
     <div class="header">
         <div>
-            <div class="logo"><img src="{{ asset('logo.png') }}" alt="Company Logo"></div>
+            <div class="logo">
+                <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('logo.png'))) }}" alt="Company Logo">
+            </div>
         </div>
         <div class="right">
             <h2>Contract</h2>
@@ -72,14 +74,14 @@
                 <strong>Client</strong><br>
                 {{ $contract->client?->name ?? 'N/A' }}
             </td>
-                <td>
-                    <strong>Contract Ref</strong><br>
-                    {{ $contract->custom_id ?? ('Contract #'.$contract->id) }}<br><br>
-                    <strong>Start Date</strong><br>
-                    {{ optional($contract->start_date)->format('d/m/Y') ?? 'N/A' }}<br><br>
-                    <strong>End Date</strong><br>
-                    {{ optional($contract->end_date)->format('d/m/Y') ?? 'N/A' }}
-                </td>
+            <td>
+                <strong>Contract Ref</strong><br>
+                {{ $contract->custom_id ?? ('Contract #'.$contract->id) }}<br><br>
+                <strong>Start Date</strong><br>
+                {{ optional($contract->start_date)->format('d/m/Y') ?? 'N/A' }}<br><br>
+                <strong>End Date</strong><br>
+                {{ optional($contract->end_date)->format('d/m/Y') ?? 'N/A' }}
+            </td>
             <td>
                 <strong>Status</strong><br>
                 {{ $contract->status ?? 'N/A' }}

@@ -41,7 +41,7 @@ class Contract extends Model
             $date = now()->format('Y-m-d');
             $count = static::query()->whereDate('created_at', now())->count() + 1;
 
-            $contract->custom_id = 'GAS-' . $date . '-' . str_pad((string) $count, 3, '0', STR_PAD_LEFT);
+            $contract->custom_id = "GAS-{$date}-{$count}";
         });
     }
 

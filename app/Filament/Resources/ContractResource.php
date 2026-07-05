@@ -32,7 +32,14 @@ class ContractResource extends Resource
                     ->required(),
                 Forms\Components\TextInput::make('custom_id')
                     ->label('Contract Reference ID')
+                    ->default(function (): string {
+                        $date = now()->format('Y-m-d');
+                        $count = Contract::query()->whereDate('created_at', now())->count() + 1;
+
+                        return "GAS-{$date}-{$count}";
+                    })
                     ->placeholder('e.g., GAS-2026-001')
+                    ->required()
                     ->unique(ignoreRecord: true)
                     ->validationMessages([
                         'unique' => 'This Contract ID already exists.',
@@ -43,6 +50,7 @@ class ContractResource extends Resource
                         Forms\Components\Repeater::make('items')
                             ->label('Products')
                             ->relationship('items')
+                            ->defaultItems(0)
                             ->schema([
                                 Forms\Components\Select::make('product_id')
                                     ->relationship('product', 'name')
@@ -105,6 +113,10 @@ class ContractResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('custom_id')
+                    ->label('Contract ID')
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('client.name')
                     ->searchable()
                     ->sortable(),
