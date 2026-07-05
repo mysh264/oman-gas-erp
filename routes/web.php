@@ -21,6 +21,44 @@ Route::get('/pdf/invoice/{invoice}', [PdfController::class, 'invoice'])->name('p
 Route::get('/pdf/contract/{id}', [PdfController::class, 'printContract'])->name('pdf.contract');
 Route::get('/pdf/handoff', [PdfController::class, 'printHandoff'])->name('pdf.handoff');
 
+Route::get('/admin/quick-sale/receipt/{invoice}', function (Invoice $invoice) {
+    abort_unless(auth()->check(), 403);
+
+    $invoice->load(['client', 'items.product']);
+
+    $subtotal = (float) $invoice->subtotal;
+    $taxAmount = (float) $invoice->tax_amount;
+    $receipt = [
+        'number' => $invoice->invoice_number ?? 'POS-'.$invoice->id,
+        'invoice_number' => $invoice->invoice_number ?? 'POS-'.$invoice->id,
+        'date' => optional($invoice->invoice_date)->format('d/m/Y') ?? now()->format('d/m/Y H:i'),
+        'customer_name' => $invoice->client?->name ?? 'Walk-in Customer',
+        'customer_phone' => $invoice->client?->phone_mobile ?? '',
+        'payment_method' => $invoice->payments()->latest()->value('payment_method') ?? 'Cash',
+        'subtotal' => number_format($subtotal, 3, '.', ''),
+        'tax_amount' => number_format($taxAmount, 3, '.', ''),
+        'total_amount' => number_format((float) $invoice->total_amount, 3, '.', ''),
+        'items' => $invoice->items->map(function (InvoiceItem $item) use ($subtotal, $taxAmount): array {
+            $lineTotal = (float) $item->line_total;
+            $lineSubtotal = $taxAmount > 0 && $subtotal > 0
+                ? round($lineTotal / (1 + ($taxAmount / $subtotal)), 3)
+                : $lineTotal;
+
+            return [
+                'name' => $item->product?->name ?? 'Product #'.$item->product_id,
+                'quantity' => number_format((float) $item->quantity, 3, '.', ''),
+                'unit_price' => number_format((float) $item->unit_price, 3, '.', ''),
+                'tax_amount' => number_format(max($lineTotal - $lineSubtotal, 0), 3, '.', ''),
+                'line_total' => number_format($lineTotal, 3, '.', ''),
+            ];
+        })->all(),
+    ];
+
+    $pdf = Pdf::loadView('receipts.pos', ['receipt' => $receipt]);
+
+    return $pdf->download($receipt['number'].'.pdf');
+})->middleware('auth')->name('quick-sale.receipt');
+
 Route::get('/admin/quick-sale/process', function (Request $request) {
     abort_unless(auth()->check(), 403);
 
@@ -34,6 +72,7 @@ Route::get('/admin/quick-sale/process', function (Request $request) {
     $receipt = DB::transaction(function () use ($data, $items): array {
         $customerName = trim((string) ($data['customer_name'] ?? 'Walk-in Customer')) ?: 'Walk-in Customer';
         $customerPhone = trim((string) ($data['customer_phone'] ?? ''));
+        $vatRate = max((float) ($data['vat_rate'] ?? 5), 0);
 
         $client = filled($customerPhone)
             ? Client::firstOrCreate(
@@ -63,7 +102,7 @@ Route::get('/admin/quick-sale/process', function (Request $request) {
             $quantity = max((float) ($item['quantity'] ?? 1), 0.001);
             $unitPrice = (float) ($product->default_price ?? $item['price'] ?? 0);
             $lineSubtotal = round($quantity * $unitPrice, 3);
-            $lineTax = round($lineSubtotal * (((float) ($product->tax_rate ?? 5)) / 100), 3);
+            $lineTax = round($lineSubtotal * ($vatRate / 100), 3);
             $lineTotal = round($lineSubtotal + $lineTax, 3);
 
             $subtotal += $lineSubtotal;

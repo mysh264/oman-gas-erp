@@ -1,9 +1,15 @@
 <x-filament-panels::page>
-    <form wire:submit="submit" class="space-y-6">
+    <div>
         {{ $this->form }}
 
-        <x-filament::button type="submit" size="lg" color="success" icon="heroicon-m-printer">
-            Process Sale & Print Receipt
-        </x-filament::button>
-    </form>
+        <div class="mt-6 flex flex-wrap items-center gap-4">
+            <x-filament::button wire:click="processOnly" size="lg" color="primary" icon="heroicon-m-check-circle">
+                Process Sale
+            </x-filament::button>
+
+            <x-filament::button wire:click="processAndPrint" size="lg" color="gray" icon="heroicon-m-printer">
+                Process & Print Receipt
+            </x-filament::button>
+        </div>
+    </div>
 </x-filament-panels::page>
