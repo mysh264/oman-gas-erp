@@ -22,12 +22,13 @@
         .logo {
             width: 160px;
             height: 56px;
-            border: 1px dashed #9ca3af;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #6b7280;
-            font-size: 11px;
+        }
+        .logo img {
+            max-width: 160px;
+            max-height: 56px;
         }
         .meta, .items {
             width: 100%;
@@ -57,7 +58,7 @@
 <body>
     <div class="header">
         <div>
-            <div class="logo">Company Logo</div>
+            <div class="logo"><img src="{{ asset('logo.png') }}" alt="Company Logo"></div>
         </div>
         <div class="right">
             <h2>Contract</h2>
@@ -71,12 +72,14 @@
                 <strong>Client</strong><br>
                 {{ $contract->client?->name ?? 'N/A' }}
             </td>
-            <td>
-                <strong>Start Date</strong><br>
-                {{ optional($contract->start_date)->format('d/m/Y') ?? 'N/A' }}<br><br>
-                <strong>End Date</strong><br>
-                {{ optional($contract->end_date)->format('d/m/Y') ?? 'N/A' }}
-            </td>
+                <td>
+                    <strong>Contract Ref</strong><br>
+                    {{ $contract->custom_id ?? ('Contract #'.$contract->id) }}<br><br>
+                    <strong>Start Date</strong><br>
+                    {{ optional($contract->start_date)->format('d/m/Y') ?? 'N/A' }}<br><br>
+                    <strong>End Date</strong><br>
+                    {{ optional($contract->end_date)->format('d/m/Y') ?? 'N/A' }}
+                </td>
             <td>
                 <strong>Status</strong><br>
                 {{ $contract->status ?? 'N/A' }}
@@ -84,14 +87,13 @@
         </tr>
     </table>
 
-    <div class="section-title">Contract Items</div>
+    <div class="section-title">Products</div>
     <table class="items">
         <thead>
             <tr>
                 <th>Product</th>
                 <th class="right">Qty</th>
-                <th class="right">Unit Price</th>
-                <th class="right">Subtotal</th>
+                <th>Gas Type</th>
             </tr>
         </thead>
         <tbody>
@@ -99,12 +101,11 @@
                 <tr>
                     <td>{{ $item->product?->name ?? 'N/A' }}</td>
                     <td class="right">{{ number_format((float) $item->quantity, 3) }}</td>
-                    <td class="right">OMR {{ number_format((float) $item->unit_price, 3) }}</td>
-                    <td class="right">OMR {{ number_format((float) $item->subtotal, 3) }}</td>
+                    <td>{{ $item->product?->gas_type ?? 'N/A' }}</td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="4">No items found.</td>
+                    <td colspan="3">No products found.</td>
                 </tr>
             @endforelse
         </tbody>

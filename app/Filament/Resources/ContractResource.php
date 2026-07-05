@@ -31,11 +31,27 @@ class ContractResource extends Resource
                     ->required(),
                 Forms\Components\TextInput::make('custom_id')
                     ->label('Contract Reference ID')
-                    ->placeholder('e.g., GAS-2026-001'),
+                    ->placeholder('e.g., GAS-2026-001')
+                    ->unique(ignoreRecord: true)
+                    ->validationMessages([
+                        'unique' => 'This Contract ID already exists.',
+                    ])
+                    ->readOnly(),
                 Forms\Components\Section::make('Gas Supply Details')
                     ->schema([
-                        Forms\Components\CheckboxList::make('products')
-                            ->relationship('products', 'name')
+                        Forms\Components\Repeater::make('items')
+                            ->label('Products')
+                            ->relationship('items')
+                            ->schema([
+                                Forms\Components\Select::make('product_id')
+                                    ->relationship('product', 'name')
+                                    ->searchable()
+                                    ->preload()
+                                    ->required(),
+                                Forms\Components\TextInput::make('quantity')
+                                    ->numeric()
+                                    ->required(),
+                            ])
                             ->columns(2),
                     ]),
                 Forms\Components\DatePicker::make('start_date')

@@ -37,9 +37,14 @@ return new class extends Migration
                 $table->id();
                 $table->foreignId('contract_id')->constrained('contracts')->cascadeOnDelete();
                 $table->foreignId('product_id')->constrained('products')->cascadeOnDelete();
+                $table->decimal('quantity', 12, 3)->default(1);
                 $table->timestamps();
 
                 $table->unique(['contract_id', 'product_id']);
+            });
+        } elseif (! Schema::hasColumn('contract_product', 'quantity')) {
+            Schema::table('contract_product', function (Blueprint $table) {
+                $table->decimal('quantity', 12, 3)->default(1)->after('product_id');
             });
         }
     }

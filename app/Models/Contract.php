@@ -29,6 +29,22 @@ class Contract extends Model
         ];
     }
 
+    protected static function boot(): void
+    {
+        parent::boot();
+
+        static::creating(function (Contract $contract): void {
+            if (filled($contract->custom_id)) {
+                return;
+            }
+
+            $date = now()->format('Y-m-d');
+            $count = static::query()->whereDate('created_at', now())->count() + 1;
+
+            $contract->custom_id = 'GAS-' . $date . '-' . str_pad((string) $count, 3, '0', STR_PAD_LEFT);
+        });
+    }
+
     public function getLabelAttribute(): string
     {
         $identifier = $this->custom_id ?? "Contract #{$this->id}";
@@ -53,7 +69,7 @@ class Contract extends Model
 
     public function products(): BelongsToMany
     {
-        return $this->belongsToMany(Product::class);
+        return $this->belongsToMany(Product::class)->withPivot('quantity')->withTimestamps();
     }
 
     public function payments(): HasMany

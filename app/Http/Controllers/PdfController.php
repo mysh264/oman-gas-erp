@@ -30,16 +30,18 @@ class PdfController extends Controller
 
     public function printContract($id): Response
     {
-        $contract = Contract::with(['client', 'items.product'])->findOrFail($id);
+        $contract = Contract::with(['client', 'items.product', 'products'])->findOrFail($id);
 
         $pdf = Pdf::loadView('pdf.document', [
-            'title' => sprintf('Contract %s', $contract->id),
+            'title' => sprintf('Contract %s', $contract->custom_id ?? $contract->id),
             'type' => 'Contract',
             'record' => $contract,
             'contract' => $contract,
         ]);
 
-        return $pdf->stream('contract_'.$id.'.pdf');
+        $filename = ($contract->custom_id ?: 'contract-'.$id).'.pdf';
+
+        return $pdf->stream($filename);
     }
 
     public function printHandoff(): Response

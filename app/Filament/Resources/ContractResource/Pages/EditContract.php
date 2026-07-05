@@ -21,4 +21,9 @@ class EditContract extends EditRecord
             Actions\DeleteAction::make(),
         ];
     }
+
+    public function getPdfFilename(): string
+    {
+        return ($this->record->custom_id ?? 'contract-'.$this->record->id).'.pdf';
+    }
 }
