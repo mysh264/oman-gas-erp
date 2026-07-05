@@ -32,7 +32,8 @@ class RoleResource extends Resource
                     ->label("Role Name"),
                 Forms\Components\CheckboxList::make("permissions")
                     ->relationship("permissions", "name")
-                    ->columns(2)
+                    ->getOptionLabelFromRecordUsing(fn ($record) => ucwords(str_replace("_", " ", $record->name)))
+                    ->columns(3)
                     ->bulkToggleable()
                     ->label("Assigned Permissions"),
             ]);
@@ -71,24 +72,29 @@ class RoleResource extends Resource
         return [];
     }
 
+
+
+
+
+
     public static function canViewAny(): bool
     {
-        return auth()->user()?->hasAnyRole(["Admin", "Accountant"]) ?? false;
+        return auth()->user()?->can('view_any_role') ?? false;
     }
 
     public static function canCreate(): bool
     {
-        return auth()->user()?->hasAnyRole(["Admin", "Accountant"]) ?? false;
+        return auth()->user()?->can('create_role') ?? false;
     }
 
-    public static function canEdit(mixed $record): bool
+    public static function canEdit(\Illuminate\Database\Eloquent\Model $record): bool
     {
-        return auth()->user()?->hasAnyRole(["Admin", "Accountant"]) ?? false;
+        return auth()->user()?->can('update_role') ?? false;
     }
 
-    public static function canDelete(mixed $record): bool
+    public static function canDelete(\Illuminate\Database\Eloquent\Model $record): bool
     {
-        return auth()->user()?->hasAnyRole(["Admin", "Accountant"]) ?? false;
+        return auth()->user()?->can('delete_role') ?? false;
     }
 
     public static function getPages(): array

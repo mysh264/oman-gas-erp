@@ -95,9 +95,26 @@ class OrderResource extends Resource
         return [];
     }
 
+
+
     public static function canViewAny(): bool
     {
-        return auth()->user()?->hasAnyRole(["Admin", "Sales"]) ?? false;
+        return auth()->user()?->can('view_any_order') ?? false;
+    }
+
+    public static function canCreate(): bool
+    {
+        return auth()->user()?->can('create_order') ?? false;
+    }
+
+    public static function canEdit(\Illuminate\Database\Eloquent\Model $record): bool
+    {
+        return auth()->user()?->can('update_order') ?? false;
+    }
+
+    public static function canDelete(\Illuminate\Database\Eloquent\Model $record): bool
+    {
+        return auth()->user()?->can('delete_order') ?? false;
     }
 
     public static function getPages(): array

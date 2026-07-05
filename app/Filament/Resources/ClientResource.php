@@ -77,24 +77,29 @@ class ClientResource extends Resource
         return [];
     }
 
+
+
+
+
+
     public static function canViewAny(): bool
     {
-        return auth()->user()?->hasAnyRole(["Admin", "Sales"]) ?? false;
+        return auth()->user()?->can('view_any_client') ?? false;
     }
 
     public static function canCreate(): bool
     {
-        return auth()->user()?->hasRole("Manager") ?? false;
+        return auth()->user()?->can('create_client') ?? false;
     }
 
-    public static function canEdit(mixed $record): bool
+    public static function canEdit(\Illuminate\Database\Eloquent\Model $record): bool
     {
-        return auth()->user()?->hasRole("Manager") ?? false;
+        return auth()->user()?->can('update_client') ?? false;
     }
 
-    public static function canDelete(mixed $record): bool
+    public static function canDelete(\Illuminate\Database\Eloquent\Model $record): bool
     {
-        return auth()->user()?->hasRole("Manager") ?? false;
+        return auth()->user()?->can('delete_client') ?? false;
     }
 
     public static function getPages(): array

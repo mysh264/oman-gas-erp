@@ -188,24 +188,29 @@ class InvoiceResource extends Resource
         ];
     }
 
+
+
+
+
+
     public static function canViewAny(): bool
     {
-        return auth()->user()?->hasAnyRole(['Admin', 'Accountant']) ?? false;
+        return auth()->user()?->can('view_any_invoice') ?? false;
     }
 
     public static function canCreate(): bool
     {
-        return auth()->user()?->hasAnyRole(['Admin', 'Accountant']) ?? false;
+        return auth()->user()?->can('create_invoice') ?? false;
     }
 
-    public static function canEdit(mixed $record): bool
+    public static function canEdit(\Illuminate\Database\Eloquent\Model $record): bool
     {
-        return auth()->user()?->hasAnyRole(['Admin', 'Accountant']) ?? false;
+        return auth()->user()?->can('update_invoice') ?? false;
     }
 
-    public static function canDelete(mixed $record): bool
+    public static function canDelete(\Illuminate\Database\Eloquent\Model $record): bool
     {
-        return auth()->user()?->hasAnyRole(['Admin', 'Accountant']) ?? false;
+        return auth()->user()?->can('delete_invoice') ?? false;
     }
 
     public static function getPages(): array
