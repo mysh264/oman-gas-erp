@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
 
-#[Fillable(['user_id', 'client_id', 'contract_id', 'order_date', 'status', 'tax_amount', 'total_amount', 'created_by'])]
+#[Fillable(['user_id', 'client_id', 'contract_id', 'order_date', 'status', 'tax_amount', 'total_amount', 'receipt_attachment', 'created_by'])]
 class Order extends Model
 {
     use LogsActivity;

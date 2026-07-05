@@ -123,8 +123,17 @@ class QuickSale extends Page implements HasForms
                                         'Bank Transfer' => 'Bank Transfer',
                                     ])
                                     ->default('Cash')
-                                    ->required(),
+                                    ->required()
+                                    ->live(),
                             ]),
+                            Components\FileUpload::make('receipt_attachment')
+                                ->label('Upload Bank Receipt / ScreenShot')
+                                ->acceptedFileTypes(['application/pdf', 'image/*'])
+                                ->directory('receipts')
+                                ->visibility('public')
+                                ->visible(fn (Get $get) => $get('payment_method') === 'Bank Transfer')
+                                ->required(fn (Get $get) => $get('payment_method') === 'Bank Transfer')
+                                ->columnSpanFull(),
                             Components\TextInput::make('vat_rate')
                                 ->numeric()
                                 ->default(5)
@@ -166,6 +175,7 @@ class QuickSale extends Page implements HasForms
             'sale_date' => today()->format('Y-m-d'),
             'currency' => 'OMR',
             'payment_method' => 'Cash',
+            'receipt_attachment' => null,
             'vat_rate' => 5,
             'items' => [
                 ['quantity' => 1],
@@ -207,6 +217,7 @@ class QuickSale extends Page implements HasForms
             $customerAddress = trim((string) ($data['customer_address'] ?? ''));
             $saleDate = $data['sale_date'] ?? today()->format('Y-m-d');
             $currency = in_array($data['currency'] ?? 'OMR', ['OMR', 'AED', 'USD'], true) ? $data['currency'] : 'OMR';
+            $receiptAttachment = $data['receipt_attachment'] ?? null;
             $vatRate = max((float) ($data['vat_rate'] ?? 5), 0);
 
             $clientAttributes = [
@@ -280,6 +291,7 @@ class QuickSale extends Page implements HasForms
                 'status' => 'Completed',
                 'tax_amount' => number_format($taxAmount, 3, '.', ''),
                 'total_amount' => number_format($totalAmount, 3, '.', ''),
+                'receipt_attachment' => $receiptAttachment,
                 'created_by' => auth()->id(),
             ]);
 
@@ -332,6 +344,7 @@ class QuickSale extends Page implements HasForms
                 'payment_date' => $saleDate,
                 'payment_method' => $data['payment_method'] ?? 'Cash',
                 'reference_number' => $invoiceNumber,
+                'receipt_attachment' => $receiptAttachment,
                 'created_by' => auth()->id(),
             ]);
 

@@ -50,16 +50,18 @@ class PaymentResource extends Resource
                 Forms\Components\Select::make('payment_method')
                     ->options([
                         'Cash' => 'Cash',
+                        'Card' => 'Card',
                         'Bank Transfer' => 'Bank Transfer',
-                        'Check' => 'Check',
-                        'Credit' => 'Credit',
                     ])
                     ->required()
                     ->live(),
-                Forms\Components\FileUpload::make('receipt_image')
-                    ->image()
+                Forms\Components\FileUpload::make('receipt_attachment')
+                    ->label('Bank Receipt Attachment')
+                    ->acceptedFileTypes(['application/pdf', 'image/*'])
                     ->directory('receipts')
-                    ->visible(fn (Get $get) => $get('payment_method') === 'Bank Transfer'),
+                    ->visibility('public')
+                    ->visible(fn (Get $get) => $get('payment_method') === 'Bank Transfer')
+                    ->required(fn (Get $get) => $get('payment_method') === 'Bank Transfer'),
                 Forms\Components\TextInput::make('reference_number')
                     ->maxLength(255),
             ]);
@@ -82,6 +84,13 @@ class PaymentResource extends Resource
                 Tables\Columns\TextColumn::make('amount')->money('OMR', divideBy: 1)->sortable(),
                 Tables\Columns\TextColumn::make('payment_date')->date('d/m/Y')->sortable(),
                 Tables\Columns\TextColumn::make('payment_method')->badge()->sortable(),
+                Tables\Columns\IconColumn::make('receipt_attachment')
+                    ->label('Receipt')
+                    ->icon('heroicon-o-document-text')
+                    ->color('success')
+                    ->url(fn ($record) => $record->receipt_attachment ? asset('storage/'.$record->receipt_attachment) : null)
+                    ->openUrlInNewTab()
+                    ->placeholder('No Receipt'),
             ])
             ->filters([])
             ->actions([
