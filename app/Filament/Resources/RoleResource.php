@@ -4,10 +4,6 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\RoleResource\Pages;
 use Filament\Forms;
-use Filament\Forms\Components\CheckboxList;
-use Filament\Forms\Components\Fieldset;
-use Filament\Forms\Components\Grid;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -19,45 +15,100 @@ class RoleResource extends Resource
 {
     protected static ?string $model = Role::class;
 
-    protected static ?string $navigationIcon = "heroicon-o-shield-check";
+    protected static ?string $navigationIcon = 'heroicon-o-shield-check';
 
-    protected static ?string $navigationLabel = "Roles";
+    protected static ?string $navigationLabel = 'Roles';
 
-    protected static ?string $modelLabel = "Role";
+    protected static ?string $modelLabel = 'Role';
 
-    protected static ?string $pluralModelLabel = "Roles";
+    protected static ?string $pluralModelLabel = 'Roles';
 
     public static function form(Form $form): Form
     {
-        return $form
-            ->schema([
-                Forms\Components\TextInput::make("name")
-                    ->required()
-                    ->unique(ignoreRecord: true)
-                    ->label("Role Name"),
-                Section::make("Permissions Matrix")
-                    ->schema([
-                        Grid::make(1)
-                            ->schema(static::permissionMatrixSchema()),
-                    ]),
-            ]);
+        return $form->schema([
+            Forms\Components\TextInput::make('name')
+                ->required()
+                ->unique(ignoreRecord: true)
+                ->label('Role Name')
+                ->columnSpanFull(),
+            Forms\Components\Tabs::make('Permissions')
+                ->columnSpanFull()
+                ->tabs([
+                    Forms\Components\Tabs\Tab::make('Resource Actions')
+                        ->schema([
+                            Forms\Components\Grid::make(1)
+                                ->schema(
+                                    collect(static::permissionResources())
+                                        ->map(fn (string $resource) => Forms\Components\Fieldset::make(ucfirst($resource) . ' Permissions')
+                                            ->schema([
+                                                Forms\Components\CheckboxList::make("permission_groups.{$resource}")
+                                                    ->options(static::permissionOptionsFor($resource))
+                                                    ->columns(4)
+                                                    ->bulkToggleable()
+                                                    ->dehydrated(false)
+                                                    ->label('')
+                                                    ->afterStateHydrated(function (Forms\Components\CheckboxList $component, ?Role $record) use ($resource): void {
+                                                        if (! $record?->exists) {
+                                                            return;
+                                                        }
+
+                                                        $component->state(
+                                                            $record->permissions()
+                                                                ->where('name', 'like', "%_{$resource}")
+                                                                ->pluck('permissions.id')
+                                                                ->map(fn ($id): string => (string) $id)
+                                                                ->all()
+                                                        );
+                                                    }),
+                                            ])
+                                        )
+                                        ->toArray()
+                                ),
+                        ]),
+                    Forms\Components\Tabs\Tab::make('Global')
+                        ->schema([
+                            Forms\Components\Fieldset::make('Global Permissions')
+                                ->schema([
+                                    Forms\Components\CheckboxList::make('permission_groups.global')
+                                        ->options(static::systemPermissionOptions())
+                                        ->columns(4)
+                                        ->bulkToggleable()
+                                        ->dehydrated(false)
+                                        ->label('')
+                                        ->afterStateHydrated(function (Forms\Components\CheckboxList $component, ?Role $record): void {
+                                            if (! $record?->exists) {
+                                                return;
+                                            }
+
+                                            $component->state(
+                                                $record->permissions()
+                                                    ->whereIn('name', static::systemPermissionNames())
+                                                    ->pluck('permissions.id')
+                                                    ->map(fn ($id): string => (string) $id)
+                                                    ->all()
+                                            );
+                                        }),
+                                ]),
+                        ]),
+                ]),
+        ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make("name")
+                Tables\Columns\TextColumn::make('name')
                     ->searchable()
                     ->sortable()
-                    ->label("Role Name"),
-                Tables\Columns\TextColumn::make("users_count")
-                    ->counts("users")
-                    ->label("Users")
+                    ->label('Role Name'),
+                Tables\Columns\TextColumn::make('users_count')
+                    ->counts('users')
+                    ->label('Users')
                     ->sortable(),
-                Tables\Columns\TextColumn::make("permissions_count")
-                    ->counts("permissions")
-                    ->label("Permissions Count")
+                Tables\Columns\TextColumn::make('permissions_count')
+                    ->counts('permissions')
+                    ->label('Permissions Count')
                     ->badge(),
             ])
             ->filters([])
@@ -76,63 +127,9 @@ class RoleResource extends Resource
         return [];
     }
 
-    public static function permissionMatrixSchema(): array
-    {
-        $fieldsets = collect(static::permissionResources())
-            ->map(fn (string $resource): Fieldset => Fieldset::make(ucfirst($resource) . " Permissions")
-                ->schema([
-                    CheckboxList::make("permission_matrix.{$resource}")
-                        ->options(static::permissionOptionsFor($resource))
-                        ->columns(4)
-                        ->bulkToggleable()
-                        ->dehydrated(false)
-                        ->label("")
-                        ->afterStateHydrated(function (CheckboxList $component, ?Role $record) use ($resource): void {
-                            if (! $record?->exists) {
-                                return;
-                            }
-
-                            $component->state(
-                                $record->permissions()
-                                    ->where("name", "like", "%_{$resource}")
-                                    ->pluck("permissions.id")
-                                    ->map(fn ($id): string => (string) $id)
-                                    ->all()
-                            );
-                        }),
-                ]))
-            ->all();
-
-        return [
-            Fieldset::make("System Permissions")
-                ->schema([
-                    CheckboxList::make("permission_matrix.system")
-                        ->options(static::systemPermissionOptions())
-                        ->columns(4)
-                        ->bulkToggleable()
-                        ->dehydrated(false)
-                        ->label("")
-                        ->afterStateHydrated(function (CheckboxList $component, ?Role $record): void {
-                            if (! $record?->exists) {
-                                return;
-                            }
-
-                            $component->state(
-                                $record->permissions()
-                                    ->whereIn("name", static::systemPermissionNames())
-                                    ->pluck("permissions.id")
-                                    ->map(fn ($id): string => (string) $id)
-                                    ->all()
-                            );
-                        }),
-                ]),
-            ...$fieldsets,
-        ];
-    }
-
     public static function selectedPermissionIdsFromData(array $data): array
     {
-        return collect($data["permission_matrix"] ?? [])
+        return collect($data['permission_groups'] ?? [])
             ->flatten()
             ->filter()
             ->map(fn ($id): int => (int) $id)
@@ -143,49 +140,59 @@ class RoleResource extends Resource
 
     public static function permissionResources(): array
     {
-        return ["order", "client", "product", "contract", "invoice", "payment", "user", "role"];
+        return ['order', 'client', 'product', 'contract', 'invoice', 'payment', 'user', 'role'];
     }
 
     protected static function permissionOptionsFor(string $resource): array
     {
         return Permission::query()
-            ->where("name", "like", "%_{$resource}")
-            ->orderByRaw("case
-                when name = ? then 1
-                when name = ? then 2
-                when name = ? then 3
-                when name = ? then 4
-                when name = ? then 5
-                else 6
-            end", [
-                "view_any_{$resource}",
-                "view_{$resource}",
-                "create_{$resource}",
-                "update_{$resource}",
-                "delete_{$resource}",
+            ->where('name', 'like', "%_{$resource}")
+            ->orderByRaw(
+                'case
+                    when name = ? then 1
+                    when name = ? then 2
+                    when name = ? then 3
+                    when name = ? then 4
+                    when name = ? then 5
+                    else 6
+                end',
+                [
+                    "view_any_{$resource}",
+                    "view_{$resource}",
+                    "create_{$resource}",
+                    "update_{$resource}",
+                    "delete_{$resource}",
+                ]
+            )
+            ->get()
+            ->mapWithKeys(fn (Permission $permission): array => [
+                $permission->id => static::permissionActionLabel($permission->name, $resource),
             ])
-            ->pluck("name", "id")
-            ->map(fn (string $name): string => static::permissionActionLabel($name, $resource))
             ->all();
     }
 
     protected static function systemPermissionOptions(): array
     {
         return Permission::query()
-            ->whereIn("name", static::systemPermissionNames())
-            ->pluck("name", "id")
-            ->map(fn (string $name): string => ucwords(str_replace("_", " ", $name)))
+            ->whereIn('name', static::systemPermissionNames())
+            ->get()
+            ->mapWithKeys(fn (Permission $permission): array => [
+                $permission->id => 'Manage All Data (Bypass Ownership)',
+            ])
             ->all();
     }
 
     protected static function systemPermissionNames(): array
     {
-        return ["manage_all_resources"];
+        return ['manage_all_resources'];
     }
 
     protected static function permissionActionLabel(string $permission, string $resource): string
     {
-        $action = str($permission)->beforeLast("_{$resource}")->replace("_", " ")->toString();
+        $action = str($permission)
+            ->beforeLast("_{$resource}")
+            ->replace('_', ' ')
+            ->toString();
 
         return ucwords($action);
     }
@@ -213,9 +220,9 @@ class RoleResource extends Resource
     public static function getPages(): array
     {
         return [
-            "index" => Pages\ListRoles::route("/"),
-            "create" => Pages\CreateRole::route("/create"),
-            "edit" => Pages\EditRole::route("/{record}/edit"),
+            'index' => Pages\ListRoles::route('/'),
+            'create' => Pages\CreateRole::route('/create'),
+            'edit' => Pages\EditRole::route('/{record}/edit'),
         ];
     }
 }

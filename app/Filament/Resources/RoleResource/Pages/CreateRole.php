@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\RoleResource\Pages;
 
 use App\Filament\Resources\RoleResource;
-use Filament\Actions;
 use Filament\Resources\Pages\CreateRecord;
 use Spatie\Permission\PermissionRegistrar;
 
@@ -13,9 +12,7 @@ class CreateRole extends CreateRecord
 
     protected function afterCreate(): void
     {
-        $permissionIds = RoleResource::selectedPermissionIdsFromData($this->data);
-
-        $this->record->permissions()->sync($permissionIds);
+        $this->record->permissions()->sync(RoleResource::selectedPermissionIdsFromData($this->data));
         app(PermissionRegistrar::class)->forgetCachedPermissions();
     }
 }

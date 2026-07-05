@@ -20,9 +20,7 @@ class EditRole extends EditRecord
 
     protected function afterSave(): void
     {
-        $permissionIds = RoleResource::selectedPermissionIdsFromData($this->data);
-
-        $this->record->permissions()->sync($permissionIds);
+        $this->record->permissions()->sync(RoleResource::selectedPermissionIdsFromData($this->data));
         app(PermissionRegistrar::class)->forgetCachedPermissions();
     }
 }
