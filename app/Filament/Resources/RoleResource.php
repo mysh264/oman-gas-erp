@@ -30,6 +30,11 @@ class RoleResource extends Resource
                     ->required()
                     ->unique(ignoreRecord: true)
                     ->label("Role Name"),
+                Forms\Components\CheckboxList::make("permissions")
+                    ->relationship("permissions", "name")
+                    ->columns(2)
+                    ->bulkToggleable()
+                    ->label("Assigned Permissions"),
             ]);
     }
 
@@ -45,6 +50,10 @@ class RoleResource extends Resource
                     ->counts("users")
                     ->label("Users")
                     ->sortable(),
+                Tables\Columns\TextColumn::make("permissions_count")
+                    ->counts("permissions")
+                    ->label("Permissions Count")
+                    ->badge(),
             ])
             ->filters([])
             ->actions([
