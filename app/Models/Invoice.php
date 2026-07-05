@@ -19,6 +19,7 @@ class Invoice extends Model
         'invoice_number',
         'branch_id',
         'client_id',
+        'contract_id',
         'order_id',
         'invoice_date',
         'due_date',
