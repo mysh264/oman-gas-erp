@@ -74,7 +74,12 @@ class UserResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()?->can('view_any_user') ?? false;
+        return auth()->user()?->can('list_access_user') ?? false;
+    }
+
+    public static function canView(\Illuminate\Database\Eloquent\Model $record): bool
+    {
+        return auth()->user()?->can('open_details_user') ?? false;
     }
 
     public static function canCreate(): bool
