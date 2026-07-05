@@ -32,8 +32,12 @@ Route::get('/admin/quick-sale/receipt/{invoice}', function (Invoice $invoice) {
         'number' => $invoice->invoice_number ?? 'POS-'.$invoice->id,
         'invoice_number' => $invoice->invoice_number ?? 'POS-'.$invoice->id,
         'date' => optional($invoice->invoice_date)->format('d/m/Y') ?? now()->format('d/m/Y H:i'),
+        'sale_date' => optional($invoice->invoice_date)->format('d/m/Y') ?? now()->format('d/m/Y H:i'),
+        'currency' => $invoice->currency ?? 'OMR',
         'customer_name' => $invoice->client?->name ?? 'Walk-in Customer',
         'customer_phone' => $invoice->client?->phone_mobile ?? '',
+        'vat_trn' => $invoice->client?->vat_number ?? '',
+        'customer_address' => $invoice->client?->address ?? '',
         'payment_method' => $invoice->payments()->latest()->value('payment_method') ?? 'Cash',
         'subtotal' => number_format($subtotal, 3, '.', ''),
         'tax_amount' => number_format($taxAmount, 3, '.', ''),
@@ -72,26 +76,51 @@ Route::get('/admin/quick-sale/process', function (Request $request) {
     $receipt = DB::transaction(function () use ($data, $items): array {
         $customerName = trim((string) ($data['customer_name'] ?? 'Walk-in Customer')) ?: 'Walk-in Customer';
         $customerPhone = trim((string) ($data['customer_phone'] ?? ''));
+        $vatTrn = trim((string) ($data['vat_trn'] ?? ''));
+        $customerAddress = trim((string) ($data['customer_address'] ?? ''));
+        $saleDate = $data['sale_date'] ?? today()->format('Y-m-d');
+        $currency = in_array($data['currency'] ?? 'OMR', ['OMR', 'AED', 'USD'], true) ? $data['currency'] : 'OMR';
         $vatRate = max((float) ($data['vat_rate'] ?? 5), 0);
 
-        $client = filled($customerPhone)
-            ? Client::firstOrCreate(
-                ['phone_mobile' => $customerPhone],
-                [
-                    'name' => $customerName,
-                    'country' => 'Oman',
-                    'is_active' => true,
-                    'user_id' => auth()->id(),
-                    'created_by' => auth()->id(),
-                ],
-            )
-            : Client::create([
-                'name' => $customerName,
-                'country' => 'Oman',
-                'is_active' => true,
-                'user_id' => auth()->id(),
-                'created_by' => auth()->id(),
-            ]);
+        $clientAttributes = [
+            'name' => $customerName,
+            'country' => 'Oman',
+            'is_active' => true,
+            'user_id' => auth()->id(),
+            'created_by' => auth()->id(),
+        ];
+
+        if (filled($vatTrn)) {
+            $clientAttributes['vat_number'] = $vatTrn;
+        }
+
+        if (filled($customerAddress)) {
+            $clientAttributes['address'] = $customerAddress;
+        }
+
+        $client = filled($vatTrn)
+            ? Client::query()->where('vat_number', $vatTrn)->first()
+            : null;
+
+        $client ??= filled($customerPhone)
+            ? Client::query()->where('phone_mobile', $customerPhone)->first()
+            : null;
+
+        $client ??= Client::create(array_merge($clientAttributes, filled($customerPhone) ? ['phone_mobile' => $customerPhone] : []));
+
+        $clientUpdates = [];
+        if (filled($customerPhone) && blank($client->phone_mobile)) {
+            $clientUpdates['phone_mobile'] = $customerPhone;
+        }
+        if (filled($vatTrn) && blank($client->vat_number)) {
+            $clientUpdates['vat_number'] = $vatTrn;
+        }
+        if (filled($customerAddress) && blank($client->address)) {
+            $clientUpdates['address'] = $customerAddress;
+        }
+        if ($clientUpdates !== []) {
+            $client->forceFill($clientUpdates)->save();
+        }
 
         $lines = [];
         $subtotal = 0.0;
@@ -126,7 +155,7 @@ Route::get('/admin/quick-sale/process', function (Request $request) {
         $order = Order::create([
             'user_id' => auth()->id(),
             'client_id' => $client->id,
-            'order_date' => today(),
+            'order_date' => $saleDate,
             'status' => 'Completed',
             'tax_amount' => number_format($taxAmount, 3, '.', ''),
             'total_amount' => number_format($totalAmount, 3, '.', ''),
@@ -138,13 +167,14 @@ Route::get('/admin/quick-sale/process', function (Request $request) {
             'invoice_number' => $invoiceNumber,
             'client_id' => $client->id,
             'order_id' => $order->id,
-            'invoice_date' => today(),
-            'due_date' => today(),
+            'invoice_date' => $saleDate,
+            'due_date' => $saleDate,
             'status' => 'Paid',
             'subtotal' => number_format($subtotal, 3, '.', ''),
             'vat_amount' => number_format($taxAmount, 3, '.', ''),
             'tax_amount' => number_format($taxAmount, 3, '.', ''),
             'total_amount' => number_format($totalAmount, 3, '.', ''),
+            'currency' => $currency,
             'created_by' => auth()->id(),
         ]);
 
@@ -175,7 +205,7 @@ Route::get('/admin/quick-sale/process', function (Request $request) {
             'invoice_id' => $invoice->id,
             'client_id' => $client->id,
             'amount' => number_format($totalAmount, 3, '.', ''),
-            'payment_date' => today(),
+            'payment_date' => $saleDate,
             'payment_method' => $data['payment_method'] ?? 'Cash',
             'reference_number' => $invoiceNumber,
             'created_by' => auth()->id(),
@@ -184,9 +214,13 @@ Route::get('/admin/quick-sale/process', function (Request $request) {
         return [
             'number' => $invoiceNumber,
             'invoice_number' => $invoiceNumber,
-            'date' => now()->format('d/m/Y H:i'),
+            'date' => \Carbon\Carbon::parse($saleDate)->format('d/m/Y'),
+            'sale_date' => \Carbon\Carbon::parse($saleDate)->format('d/m/Y'),
+            'currency' => $currency,
             'customer_name' => $client->name,
             'customer_phone' => $customerPhone,
+            'vat_trn' => $vatTrn,
+            'customer_address' => $customerAddress,
             'payment_method' => $data['payment_method'] ?? 'Cash',
             'subtotal' => number_format($subtotal, 3, '.', ''),
             'tax_amount' => number_format($taxAmount, 3, '.', ''),

@@ -28,6 +28,7 @@ class Invoice extends Model
         'vat_amount',
         'tax_amount',
         'total_amount',
+        'currency',
         'created_by',
     ];
 

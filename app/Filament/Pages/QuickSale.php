@@ -13,6 +13,7 @@ use Filament\Forms\Components;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\DB;
@@ -51,7 +52,7 @@ class QuickSale extends Page implements HasForms
         return $form
             ->schema([
                 Components\Grid::make(3)->schema([
-                    Components\Section::make('Customer Information')
+                    Components\Section::make('Customer Details')
                         ->schema([
                             Components\TextInput::make('customer_name')
                                 ->required()
@@ -60,13 +61,20 @@ class QuickSale extends Page implements HasForms
                                 ->maxLength(255),
                             Components\TextInput::make('customer_phone')
                                 ->label('Phone Number')
-                                ->tel()
-                                ->default('+968 ')
-                                ->maxLength(50),
+                                ->placeholder('+968 9000 0000')
+                                ->maxLength(30),
+                            Components\TextInput::make('vat_trn')
+                                ->label('VAT / TRN Number')
+                                ->placeholder('Enter TRN if business customer')
+                                ->maxLength(255),
+                            Components\Textarea::make('customer_address')
+                                ->label('Address')
+                                ->rows(2)
+                                ->maxLength(1000),
                         ])
                         ->columnSpan(['default' => 3, 'lg' => 1]),
 
-                    Components\Section::make('Products & Payment')
+                    Components\Section::make('Products & Transaction Setup')
                         ->schema([
                             Components\Repeater::make('items')
                                 ->schema([
@@ -85,7 +93,7 @@ class QuickSale extends Page implements HasForms
                                         ->required(),
                                     Components\TextInput::make('price')
                                         ->numeric()
-                                        ->prefix('OMR')
+                                        ->prefix(fn (Get $get) => $get('../../currency') ?: 'OMR')
                                         ->required()
                                         ->readOnly(),
                                 ])
@@ -93,7 +101,21 @@ class QuickSale extends Page implements HasForms
                                 ->addActionLabel('Add Product')
                                 ->required()
                                 ->minItems(1),
-                            Components\Grid::make(2)->schema([
+                            Components\Grid::make(3)->schema([
+                                Components\DatePicker::make('sale_date')
+                                    ->label('Transaction Date')
+                                    ->default(today())
+                                    ->displayFormat('d/m/Y')
+                                    ->format('Y-m-d')
+                                    ->required(),
+                                Components\Select::make('currency')
+                                    ->options([
+                                        'OMR' => 'OMR',
+                                        'AED' => 'AED',
+                                        'USD' => 'USD',
+                                    ])
+                                    ->default('OMR')
+                                    ->required(),
                                 Components\Select::make('payment_method')
                                     ->options([
                                         'Cash' => 'Cash',
@@ -102,12 +124,12 @@ class QuickSale extends Page implements HasForms
                                     ])
                                     ->default('Cash')
                                     ->required(),
-                                Components\TextInput::make('vat_rate')
-                                    ->numeric()
-                                    ->default(5)
-                                    ->label('VAT Rate (%)')
-                                    ->required(),
                             ]),
+                            Components\TextInput::make('vat_rate')
+                                ->numeric()
+                                ->default(5)
+                                ->label('VAT Rate (%)')
+                                ->required(),
                         ])
                         ->columnSpan(['default' => 3, 'lg' => 2]),
                 ]),
@@ -138,7 +160,11 @@ class QuickSale extends Page implements HasForms
     {
         $this->form->fill([
             'customer_name' => $this->getDefaultCustomerName(),
-            'customer_phone' => '+968 ',
+            'customer_phone' => null,
+            'vat_trn' => null,
+            'customer_address' => null,
+            'sale_date' => today()->format('Y-m-d'),
+            'currency' => 'OMR',
             'payment_method' => 'Cash',
             'vat_rate' => 5,
             'items' => [
@@ -177,26 +203,51 @@ class QuickSale extends Page implements HasForms
         return DB::transaction(function () use ($data, $items): array {
             $customerName = trim((string) ($data['customer_name'] ?? '')) ?: $this->getDefaultCustomerName();
             $customerPhone = trim((string) ($data['customer_phone'] ?? ''));
+            $vatTrn = trim((string) ($data['vat_trn'] ?? ''));
+            $customerAddress = trim((string) ($data['customer_address'] ?? ''));
+            $saleDate = $data['sale_date'] ?? today()->format('Y-m-d');
+            $currency = in_array($data['currency'] ?? 'OMR', ['OMR', 'AED', 'USD'], true) ? $data['currency'] : 'OMR';
             $vatRate = max((float) ($data['vat_rate'] ?? 5), 0);
 
-            $client = filled($customerPhone) && $customerPhone !== '+968'
-                ? Client::firstOrCreate(
-                    ['phone_mobile' => $customerPhone],
-                    [
-                        'name' => $customerName,
-                        'country' => 'Oman',
-                        'is_active' => true,
-                        'user_id' => auth()->id(),
-                        'created_by' => auth()->id(),
-                    ],
-                )
-                : Client::create([
-                    'name' => $customerName,
-                    'country' => 'Oman',
-                    'is_active' => true,
-                    'user_id' => auth()->id(),
-                    'created_by' => auth()->id(),
-                ]);
+            $clientAttributes = [
+                'name' => $customerName,
+                'country' => 'Oman',
+                'is_active' => true,
+                'user_id' => auth()->id(),
+                'created_by' => auth()->id(),
+            ];
+
+            if (filled($vatTrn)) {
+                $clientAttributes['vat_number'] = $vatTrn;
+            }
+
+            if (filled($customerAddress)) {
+                $clientAttributes['address'] = $customerAddress;
+            }
+
+            $client = filled($vatTrn)
+                ? Client::query()->where('vat_number', $vatTrn)->first()
+                : null;
+
+            $client ??= filled($customerPhone)
+                ? Client::query()->where('phone_mobile', $customerPhone)->first()
+                : null;
+
+            $client ??= Client::create(array_merge($clientAttributes, filled($customerPhone) ? ['phone_mobile' => $customerPhone] : []));
+
+            $clientUpdates = [];
+            if (filled($customerPhone) && blank($client->phone_mobile)) {
+                $clientUpdates['phone_mobile'] = $customerPhone;
+            }
+            if (filled($vatTrn) && blank($client->vat_number)) {
+                $clientUpdates['vat_number'] = $vatTrn;
+            }
+            if (filled($customerAddress) && blank($client->address)) {
+                $clientUpdates['address'] = $customerAddress;
+            }
+            if ($clientUpdates !== []) {
+                $client->forceFill($clientUpdates)->save();
+            }
 
             $lines = [];
             $subtotal = 0.0;
@@ -225,7 +276,7 @@ class QuickSale extends Page implements HasForms
             $order = Order::create([
                 'user_id' => auth()->id(),
                 'client_id' => $client->id,
-                'order_date' => today(),
+                'order_date' => $saleDate,
                 'status' => 'Completed',
                 'tax_amount' => number_format($taxAmount, 3, '.', ''),
                 'total_amount' => number_format($totalAmount, 3, '.', ''),
@@ -237,13 +288,14 @@ class QuickSale extends Page implements HasForms
                 'invoice_number' => $invoiceNumber,
                 'client_id' => $client->id,
                 'order_id' => $order->id,
-                'invoice_date' => today(),
-                'due_date' => today(),
+                'invoice_date' => $saleDate,
+                'due_date' => $saleDate,
                 'status' => 'Paid',
                 'subtotal' => number_format($subtotal, 3, '.', ''),
                 'vat_amount' => number_format($taxAmount, 3, '.', ''),
                 'tax_amount' => number_format($taxAmount, 3, '.', ''),
                 'total_amount' => number_format($totalAmount, 3, '.', ''),
+                'currency' => $currency,
                 'created_by' => auth()->id(),
             ]);
 
@@ -277,7 +329,7 @@ class QuickSale extends Page implements HasForms
                 'invoice_id' => $invoice->id,
                 'client_id' => $client->id,
                 'amount' => number_format($totalAmount, 3, '.', ''),
-                'payment_date' => today(),
+                'payment_date' => $saleDate,
                 'payment_method' => $data['payment_method'] ?? 'Cash',
                 'reference_number' => $invoiceNumber,
                 'created_by' => auth()->id(),

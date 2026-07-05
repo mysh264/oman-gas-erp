@@ -30,8 +30,14 @@ class ClientResource extends Resource
                 Forms\Components\Section::make('Contact Information')
                     ->schema([
                         Forms\Components\TextInput::make('email')->email(),
-                        Forms\Components\TextInput::make('phone_mobile')->tel()->prefix('+968'),
-                        Forms\Components\TextInput::make('phone_landline')->tel()->prefix('+968'),
+                        Forms\Components\TextInput::make('phone_mobile')
+                            ->label('Phone mobile')
+                            ->placeholder('+968 9123 4567 or +971 50 123 4567')
+                            ->maxLength(30),
+                        Forms\Components\TextInput::make('phone_landline')
+                            ->label('Phone landline')
+                            ->placeholder('+968 2412 3456 or +971 4 123 4567')
+                            ->maxLength(30),
                     ])
                     ->columns(3),
                 Forms\Components\Repeater::make('contacts')
@@ -39,7 +45,9 @@ class ClientResource extends Resource
                     ->schema([
                         Forms\Components\TextInput::make('name')->required()->maxLength(255),
                         Forms\Components\TextInput::make('position')->maxLength(255),
-                        Forms\Components\TextInput::make('phone')->tel()->maxLength(255),
+                        Forms\Components\TextInput::make('phone')
+                            ->placeholder('+968 9123 4567 or +971 50 123 4567')
+                            ->maxLength(30),
                         Forms\Components\TextInput::make('email')->email()->maxLength(255),
                         Forms\Components\Toggle::make('is_primary')->default(false),
                     ])
