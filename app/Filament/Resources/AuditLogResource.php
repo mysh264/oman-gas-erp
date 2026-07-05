@@ -52,17 +52,9 @@ class AuditLogResource extends Resource
                 Tables\Columns\TextColumn::make('event')
                     ->label('Action')
                     ->badge(),
-                Tables\Columns\TextColumn::make('properties')
-                    ->label('Changes Summary')
-                    ->formatStateUsing(fn ($state, Activity $record): string => count($record->attribute_changes['attributes'] ?? []) . ' field(s) changed')
-                    ->action(
-                        Tables\Actions\Action::make('view_changes')
-                            ->label('View Details')
-                            ->modalHeading('Change Details')
-                            ->modalSubmitAction(false)
-                            ->modalCancelActionLabel('Close')
-                            ->modalContent(fn (Activity $record) => view('filament.tables.audit-diff', ['data' => $record->attribute_changes?->toArray() ?? []])),
-                    ),
+                Tables\Columns\ViewColumn::make('changes_summary')
+                    ->label('Changes')
+                    ->view('filament.tables.columns.audit-button'),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('event')->options([
