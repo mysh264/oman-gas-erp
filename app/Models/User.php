@@ -39,10 +39,9 @@ class User extends Authenticatable implements FilamentUser
             "Admin",
             "Manager",
             "Warehouse Staff",
-            "Sales Rep",
-            "Sales (بائع)",
-            "Accountant (محاسب)",
-            "Factory Manager (مدير مصنع)",
+            "Sales",
+            "Accountant",
+            "Factory Manager",
         ]);
     }
 }

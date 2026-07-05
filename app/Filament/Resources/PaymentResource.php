@@ -97,7 +97,7 @@ class PaymentResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()?->hasAnyRole(['Manager', 'Sales Rep']) ?? false;
+        return auth()->user()?->hasAnyRole(['Admin', 'Accountant']) ?? false;
     }
 
     public static function getPages(): array

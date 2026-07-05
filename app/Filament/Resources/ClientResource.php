@@ -79,7 +79,7 @@ class ClientResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()?->hasAnyRole(["Manager", "Sales Rep"]) ?? false;
+        return auth()->user()?->hasAnyRole(["Admin", "Sales"]) ?? false;
     }
 
     public static function canCreate(): bool

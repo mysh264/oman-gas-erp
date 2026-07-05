@@ -166,22 +166,22 @@ class ContractResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()?->hasRole('Manager') ?? false;
+        return auth()->user()?->hasAnyRole(['Admin', 'Accountant']) ?? false;
     }
 
     public static function canCreate(): bool
     {
-        return auth()->user()?->hasRole('Manager') ?? false;
+        return auth()->user()?->hasAnyRole(['Admin', 'Accountant']) ?? false;
     }
 
     public static function canEdit(mixed $record): bool
     {
-        return auth()->user()?->hasRole('Manager') ?? false;
+        return auth()->user()?->hasAnyRole(['Admin', 'Accountant']) ?? false;
     }
 
     public static function canDelete(mixed $record): bool
     {
-        return auth()->user()?->hasRole('Manager') ?? false;
+        return auth()->user()?->hasAnyRole(['Admin', 'Accountant']) ?? false;
     }
 
     public static function getPages(): array

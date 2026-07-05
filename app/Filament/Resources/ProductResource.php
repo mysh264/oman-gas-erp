@@ -92,12 +92,12 @@ class ProductResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()?->hasAnyRole(['Manager', 'Warehouse Staff']) ?? false;
+        return auth()->user()?->hasAnyRole(['Admin', 'Sales']) ?? false;
     }
 
     public static function canCreate(): bool
     {
-        return auth()->user()?->hasAnyRole(['Manager', 'Warehouse Staff']) ?? false;
+        return auth()->user()?->hasAnyRole(['Admin', 'Sales']) ?? false;
     }
 
     public static function canEdit(mixed $record): bool
