@@ -14,34 +14,34 @@ class ClientResource extends Resource
 {
     protected static ?string $model = Client::class;
 
-    protected static ?string $navigationIcon = "heroicon-o-rectangle-stack";
+    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make("name")->required()->maxLength(255),
-                Forms\Components\TextInput::make("cr_number")
-                    ->label("CR Number (Oman)")
-                    ->placeholder("e.g., 1234567")
+                Forms\Components\TextInput::make('name')->required()->maxLength(255),
+                Forms\Components\TextInput::make('cr_number')
+                    ->label('CR Number (Oman)')
+                    ->placeholder('e.g., 1234567')
                     ->maxLength(255),
-                Forms\Components\TextInput::make("vat_number")->maxLength(255),
-                Forms\Components\TextInput::make("city")->maxLength(255),
-                Forms\Components\Section::make("Contact Information")
+                Forms\Components\TextInput::make('vat_number')->maxLength(255),
+                Forms\Components\TextInput::make('city')->maxLength(255),
+                Forms\Components\Section::make('Contact Information')
                     ->schema([
-                        Forms\Components\TextInput::make("email")->email(),
-                        Forms\Components\TextInput::make("phone_mobile")->tel()->prefix("+968"),
-                        Forms\Components\TextInput::make("phone_landline")->tel()->prefix("+968"),
+                        Forms\Components\TextInput::make('email')->email(),
+                        Forms\Components\TextInput::make('phone_mobile')->tel()->prefix('+968'),
+                        Forms\Components\TextInput::make('phone_landline')->tel()->prefix('+968'),
                     ])
                     ->columns(3),
-                Forms\Components\Repeater::make("contacts")
+                Forms\Components\Repeater::make('contacts')
                     ->relationship()
                     ->schema([
-                        Forms\Components\TextInput::make("name")->required()->maxLength(255),
-                        Forms\Components\TextInput::make("position")->maxLength(255),
-                        Forms\Components\TextInput::make("phone")->tel()->maxLength(255),
-                        Forms\Components\TextInput::make("email")->email()->maxLength(255),
-                        Forms\Components\Toggle::make("is_primary")->default(false),
+                        Forms\Components\TextInput::make('name')->required()->maxLength(255),
+                        Forms\Components\TextInput::make('position')->maxLength(255),
+                        Forms\Components\TextInput::make('phone')->tel()->maxLength(255),
+                        Forms\Components\TextInput::make('email')->email()->maxLength(255),
+                        Forms\Components\Toggle::make('is_primary')->default(false),
                     ])
                     ->columns(2)
                     ->defaultItems(0)
@@ -53,13 +53,17 @@ class ClientResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make("name")->searchable()->sortable(),
-                Tables\Columns\TextColumn::make("cr_number")->searchable(),
-                Tables\Columns\TextColumn::make("vat_number")->searchable(),
-                Tables\Columns\TextColumn::make("city")->searchable()->sortable(),
-                Tables\Columns\TextColumn::make("phone_mobile")->label("Mobile")->searchable(),
-                Tables\Columns\TextColumn::make("contracts_count")->counts("contracts")->label("Contracts"),
-                Tables\Columns\TextColumn::make("invoices_sum_total_amount")->sum("invoices", "total_amount")->label("Total OMR"),
+                Tables\Columns\TextColumn::make('creator.name')
+                    ->label('Created By')
+                    ->visible(fn () => auth()->user()?->can('view_creator_info') ?? false)
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('name')->searchable()->sortable(),
+                Tables\Columns\TextColumn::make('cr_number')->searchable(),
+                Tables\Columns\TextColumn::make('vat_number')->searchable(),
+                Tables\Columns\TextColumn::make('city')->searchable()->sortable(),
+                Tables\Columns\TextColumn::make('phone_mobile')->label('Mobile')->searchable(),
+                Tables\Columns\TextColumn::make('contracts_count')->counts('contracts')->label('Contracts'),
+                Tables\Columns\TextColumn::make('invoices_sum_total_amount')->sum('invoices', 'total_amount')->label('Total OMR'),
             ])
             ->filters([])
             ->actions([
@@ -76,11 +80,6 @@ class ClientResource extends Resource
     {
         return [];
     }
-
-
-
-
-
 
     public static function canViewAny(): bool
     {
@@ -107,7 +106,6 @@ class ClientResource extends Resource
         return auth()->user()?->can('delete_client') ?? false;
     }
 
-
     public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
     {
         $query = parent::getEloquentQuery();
@@ -122,9 +120,9 @@ class ClientResource extends Resource
     public static function getPages(): array
     {
         return [
-            "index" => Pages\ListClients::route("/"),
-            "create" => Pages\CreateClient::route("/create"),
-            "edit" => Pages\EditClient::route("/{record}/edit"),
+            'index' => Pages\ListClients::route('/'),
+            'create' => Pages\CreateClient::route('/create'),
+            'edit' => Pages\EditClient::route('/{record}/edit'),
         ];
     }
 }

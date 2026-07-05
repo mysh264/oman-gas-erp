@@ -198,7 +198,11 @@ class RoleResource extends Resource
             ->whereIn('name', static::systemPermissionNames())
             ->get()
             ->mapWithKeys(fn (Permission $permission): array => [
-                $permission->id => 'Enable Global Management (Can see all data)',
+                $permission->id => match ($permission->name) {
+                    'manage_all_resources' => 'Enable Global Management (Can see all data)',
+                    'view_creator_info' => 'View Creator Info',
+                    default => ucwords(str_replace('_', ' ', $permission->name)),
+                },
             ])
             ->all();
     }
@@ -216,7 +220,7 @@ class RoleResource extends Resource
 
     protected static function systemPermissionNames(): array
     {
-        return ['manage_all_resources'];
+        return ['manage_all_resources', 'view_creator_info'];
     }
 
     protected static function auditPermissionNames(): array

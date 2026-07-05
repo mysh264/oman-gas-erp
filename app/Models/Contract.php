@@ -27,6 +27,13 @@ class Contract extends Model
         'created_by',
     ];
 
+    protected static function booted(): void
+    {
+        static::creating(function (Contract $contract): void {
+            $contract->created_by = auth()->id();
+        });
+    }
+
     protected function casts(): array
     {
         return [

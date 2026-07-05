@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Concerns\AssignsCurrentUser;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
@@ -14,31 +15,49 @@ class Client extends Model
     use AssignsCurrentUser;
 
     protected $fillable = [
-        "user_id",
-        "name",
-        "cr_number",
-        "vat_number",
-        "commercial_registration_number",
-        "country",
-        "city",
-        "address",
-        "phone",
-        "phone_mobile",
-        "phone_landline",
-        "email",
-        "is_active",
+        'user_id',
+        'created_by',
+        'name',
+        'cr_number',
+        'vat_number',
+        'commercial_registration_number',
+        'country',
+        'city',
+        'address',
+        'phone',
+        'phone_mobile',
+        'phone_landline',
+        'email',
+        'is_active',
     ];
+
+    protected static function booted(): void
+    {
+        static::creating(function (Client $client): void {
+            $client->created_by = auth()->id();
+        });
+    }
 
     protected function casts(): array
     {
         return [
-            "is_active" => "boolean",
+            'is_active' => 'boolean',
         ];
     }
 
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()->logAll()->logOnlyDirty();
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 
     public function contacts(): HasMany

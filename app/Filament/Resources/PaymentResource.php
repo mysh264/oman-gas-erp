@@ -69,6 +69,10 @@ class PaymentResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('creator.name')
+                    ->label('Created By')
+                    ->visible(fn () => auth()->user()?->can('view_creator_info') ?? false)
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('invoice.invoice_number')->searchable()->sortable(),
                 Tables\Columns\TextColumn::make('client.name')->searchable()->sortable(),
                 Tables\Columns\TextColumn::make('contract.custom_id')
@@ -95,8 +99,6 @@ class PaymentResource extends Resource
         return [];
     }
 
-
-
     public static function canViewAny(): bool
     {
         return auth()->user()?->can('list_access_payment') ?? false;
@@ -121,7 +123,6 @@ class PaymentResource extends Resource
     {
         return auth()->user()?->can('delete_payment') ?? false;
     }
-
 
     public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
     {

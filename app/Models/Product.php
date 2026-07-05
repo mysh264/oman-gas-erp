@@ -24,7 +24,15 @@ class Product extends Model
         'unit',
         'is_active',
         'stock_quantity',
+        'created_by',
     ];
+
+    protected static function booted(): void
+    {
+        static::creating(function (Product $product): void {
+            $product->created_by = auth()->id();
+        });
+    }
 
     protected function casts(): array
     {
@@ -40,6 +48,11 @@ class Product extends Model
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()->logAll()->logOnlyDirty();
+    }
+
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 
     public function contractItems(): HasMany

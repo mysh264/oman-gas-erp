@@ -9,11 +9,18 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
 
-#[Fillable(["user_id", "invoice_id", "contract_id", "client_id", "amount", "payment_date", "payment_method", "reference_number", "receipt_image"])]
+#[Fillable(["user_id", "invoice_id", "contract_id", "client_id", "amount", "payment_date", "payment_method", "reference_number", "receipt_image", "created_by"])]
 class Payment extends Model
 {
     use LogsActivity;
     use AssignsCurrentUser;
+
+    protected static function booted(): void
+    {
+        static::creating(function (Payment $payment): void {
+            $payment->created_by = auth()->id();
+        });
+    }
 
     protected function casts(): array
     {
@@ -41,5 +48,10 @@ class Payment extends Model
     public function client(): BelongsTo
     {
         return $this->belongsTo(Client::class);
+    }
+
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 }

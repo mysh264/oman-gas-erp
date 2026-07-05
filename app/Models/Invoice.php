@@ -30,6 +30,13 @@ class Invoice extends Model
         'created_by',
     ];
 
+    protected static function booted(): void
+    {
+        static::creating(function (Invoice $invoice): void {
+            $invoice->created_by = auth()->id();
+        });
+    }
+
     protected function casts(): array
     {
         return [

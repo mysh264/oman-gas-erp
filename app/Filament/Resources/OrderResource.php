@@ -62,6 +62,10 @@ class OrderResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('creator.name')
+                    ->label('Created By')
+                    ->visible(fn () => auth()->user()?->can('view_creator_info') ?? false)
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('client.name')
                     ->label('Client')
                     ->searchable(),
@@ -95,8 +99,6 @@ class OrderResource extends Resource
         return [];
     }
 
-
-
     public static function canViewAny(): bool
     {
         return auth()->user()?->can('list_access_order') ?? false;
@@ -121,7 +123,6 @@ class OrderResource extends Resource
     {
         return auth()->user()?->can('delete_order') ?? false;
     }
-
 
     public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
     {

@@ -10,11 +10,18 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
 
-#[Fillable(['user_id', 'client_id', 'contract_id', 'order_date', 'status', 'tax_amount', 'total_amount'])]
+#[Fillable(['user_id', 'client_id', 'contract_id', 'order_date', 'status', 'tax_amount', 'total_amount', 'created_by'])]
 class Order extends Model
 {
     use LogsActivity;
     use AssignsCurrentUser;
+
+    protected static function booted(): void
+    {
+        static::creating(function (Order $order): void {
+            $order->created_by = auth()->id();
+        });
+    }
 
     protected function casts(): array
     {
@@ -38,6 +45,11 @@ class Order extends Model
     public function contract(): BelongsTo
     {
         return $this->belongsTo(Contract::class);
+    }
+
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 
     public function items(): HasMany

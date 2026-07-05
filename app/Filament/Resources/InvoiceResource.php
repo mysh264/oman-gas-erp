@@ -155,6 +155,10 @@ class InvoiceResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('creator.name')
+                    ->label('Created By')
+                    ->visible(fn () => auth()->user()?->can('view_creator_info') ?? false)
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('invoice_number')->searchable()->sortable(),
                 Tables\Columns\TextColumn::make('client.name')->searchable()->sortable(),
                 Tables\Columns\TextColumn::make('contract.custom_id')
@@ -183,15 +187,8 @@ class InvoiceResource extends Resource
 
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
-
-
-
-
-
 
     public static function canViewAny(): bool
     {
@@ -217,7 +214,6 @@ class InvoiceResource extends Resource
     {
         return auth()->user()?->can('delete_invoice') ?? false;
     }
-
 
     public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
     {

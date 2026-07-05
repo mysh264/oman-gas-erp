@@ -113,6 +113,10 @@ class ContractResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('creator.name')
+                    ->label('Created By')
+                    ->visible(fn () => auth()->user()?->can('view_creator_info') ?? false)
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('custom_id')
                     ->label('Contract ID')
                     ->searchable()
@@ -144,9 +148,7 @@ class ContractResource extends Resource
                 Tables\Columns\TextColumn::make('payments_sum_amount')->sum('payments', 'amount')->label('Received'),
                 Tables\Columns\TextColumn::make('balance')->state(fn (Contract $record) => (float) $record->total_value - (float) $record->payments()->sum('amount'))->money('OMR')->label('Balance'),
             ])
-            ->filters([
-                //
-            ])
+            ->filters([])
             ->actions([
                 Tables\Actions\EditAction::make(),
             ])
@@ -159,15 +161,8 @@ class ContractResource extends Resource
 
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
-
-
-
-
-
 
     public static function canViewAny(): bool
     {
@@ -193,7 +188,6 @@ class ContractResource extends Resource
     {
         return auth()->user()?->can('delete_contract') ?? false;
     }
-
 
     public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
     {
