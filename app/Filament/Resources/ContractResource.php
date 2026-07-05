@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\ContractResource\Pages;
 use App\Models\Client;
 use App\Models\Contract;
+use App\Models\Product;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -47,9 +48,31 @@ class ContractResource extends Resource
                                     ->relationship('product', 'name')
                                     ->searchable()
                                     ->preload()
-                                    ->required(),
+                                    ->required()
+                                    ->live()
+                                    ->afterStateUpdated(function ($state, Forms\Set $set): void {
+                                        $product = Product::query()->find($state);
+
+                                        $set('unit_price', $product?->default_price ?? 0);
+                                        $set('subtotal', ((float) ($product?->default_price ?? 0)));
+                                    }),
                                 Forms\Components\TextInput::make('quantity')
                                     ->numeric()
+                                    ->required()
+                                    ->live()
+                                    ->afterStateUpdated(function (Forms\Get $get, Forms\Set $set): void {
+                                        $quantity = (float) ($get('quantity') ?? 0);
+                                        $unitPrice = (float) ($get('unit_price') ?? 0);
+
+                                        $set('subtotal', $quantity * $unitPrice);
+                                    }),
+                                Forms\Components\TextInput::make('unit_price')
+                                    ->numeric()
+                                    ->prefix('OMR')
+                                    ->required(),
+                                Forms\Components\TextInput::make('subtotal')
+                                    ->numeric()
+                                    ->prefix('OMR')
                                     ->required(),
                             ])
                             ->columns(2),
